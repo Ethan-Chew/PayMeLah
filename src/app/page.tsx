@@ -10,7 +10,7 @@ export default function Home() {
 
       <div className="p-10 px-10 md:px-20 flex flex-col gap-5">
         <div className="my-5">
-          <h1 className="text-3xl font-bold">PayMeLah!</h1>
+          <h1 className="text-4xl font-bold">PayMeLah!</h1>
           <p className="font-semibold text-lg">Split shared expenses with your friends, easily.</p>
           <p className="text-dark-secondary">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.</p>
         </div>
