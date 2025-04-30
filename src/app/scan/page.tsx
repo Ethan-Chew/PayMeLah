@@ -49,6 +49,11 @@ export default function ReceiptScanning() {
         }
     };
 
+    const resetTakenImage = () => {
+        setCapturedImage(null);
+        startWebcam();
+    }
+
     useEffect(() => {
         startWebcam();
         return () => stopWebcam();
@@ -56,18 +61,24 @@ export default function ReceiptScanning() {
 
     return (
         <div className="bg-dark-background min-h-screen flex flex-col items-center justify-center">
-            <div className="border-2 dark:border-dark-border rounded-lg overflow-hidden w-full max-w-[50vw] aspect-video">
+            <h1 className="text-white font-semibold text-3xl">Capture your Receipt</h1>
+            <div className="m-4 md:m-0">
                 { !capturedImage && (
                     <video
                         id="video"
                         autoPlay
                         playsInline
                         ref={videoRef}
-                        className="w-full h-full object-cover"
+                        className="border-2 dark:border-dark-border rounded-lg overflow-hidden w-auto h-full md:max-w-[50vw] md:aspect-video box-border"
                     />
                 ) }
+
                 { capturedImage && (
-                    <img alt="Captured Image" src={decodeURIComponent(capturedImage)} className="w-full h-full object-cover" />
+                    <img
+                        alt="Captured Image"
+                        src={decodeURIComponent(capturedImage)}
+                        className="border-2 dark:border-dark-border rounded-lg overflow-hidden w-full h-full md:max-w-[50vw] md:aspect-video"
+                    />
                 ) }
             </div>
             <div className="mt-5 bg-dark-container flex flex-row gap-5 lg:w-[25vw] px-10 py-2 rounded-full items-center justify-center">
@@ -78,8 +89,9 @@ export default function ReceiptScanning() {
                 </button>
 
                 <button
-                    className="text-3xl p-3 bg-dark-accent text-white rounded-full cursor-pointer"
+                    className={`text-3xl p-3 ${!!capturedImage ? "bg-neutral-800" : "bg-dark-accent"} text-white rounded-full cursor-pointer`}
                     onClick={() => captureImage()}
+                    disabled={!!capturedImage}
                 >
                     <TiCameraOutline />
                 </button>
@@ -87,11 +99,17 @@ export default function ReceiptScanning() {
                 <button
                     className="text-dark-secondary hover:text-white hover:font-semibold duration-150 disabled:cursor-not-allowed"
                     disabled={!capturedImage}
-                    onClick={() => setCapturedImage(null)}
+                    onClick={resetTakenImage}
                 >
                     Retake
                 </button>
             </div>
+
+            { !!capturedImage && (
+                <button
+                    className="bg-dark-accent text-white rounded-lg m-4 p-3 text-semibold duration-150"
+                >Lorum Ipsum LOL</button>
+            ) }
 
             <canvas ref={canvasRef} className="hidden" />
         </div>

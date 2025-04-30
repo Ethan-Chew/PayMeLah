@@ -2,12 +2,9 @@ import GettingStarted from "./components/ui/GettingStarted";
 import ScanReceiptButton from "./components/ui/ScanReceiptButton";
 import TermsAndPrivacy from "./components/ui/TermsAndPrivacy";
 
-
 export default function Home() {
   return (
     <div className="min-h-screen bg-dark-background text-white">
-      {/* <NavigationBar /> */}
-
       <div className="p-10 px-10 md:px-20 flex flex-col gap-5">
         <div className="my-5">
           <h1 className="text-4xl font-bold">PayMeLah!</h1>
