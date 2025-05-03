@@ -1,13 +1,17 @@
 "use client";
 import { TiCameraOutline } from "react-icons/ti";
 import { useEffect, useRef, useState } from "react";
+import { useAppData } from "../providers/AppDataProvider";
+import { useRouter } from "next/navigation";
 
 export default function ReceiptScanning() {
+    const router = useRouter();
+    const { imageUrl, setImageUrl } = useAppData();
+
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-    const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
     const startWebcam = async () => {
         try {
@@ -44,14 +48,19 @@ export default function ReceiptScanning() {
             if (ctx) {
                 ctx.drawImage(video, 0, 0, width, height);
                 const imageData = canvas.toDataURL("image/png");
-                setCapturedImage(imageData);
+                setImageUrl(imageData);
             }
         }
     };
 
     const resetTakenImage = () => {
-        setCapturedImage(null);
+        setImageUrl(null);
         startWebcam();
+    }
+
+    const handleSubmit = async () => {
+        if (!imageUrl) return;
+        router.push("/split");
     }
 
     useEffect(() => {
@@ -63,7 +72,7 @@ export default function ReceiptScanning() {
         <div className="bg-dark-background min-h-screen flex flex-col items-center justify-center">
             <h1 className="text-white font-semibold text-3xl">Capture your Receipt</h1>
             <div className="m-4 md:m-0">
-                { !capturedImage && (
+                { !imageUrl && (
                     <video
                         id="video"
                         autoPlay
@@ -73,10 +82,10 @@ export default function ReceiptScanning() {
                     />
                 ) }
 
-                { capturedImage && (
+                { imageUrl && (
                     <img
                         alt="Captured Image"
-                        src={decodeURIComponent(capturedImage)}
+                        src={decodeURIComponent(imageUrl)}
                         className="border-2 dark:border-dark-border rounded-lg overflow-hidden w-full h-full md:max-w-[50vw] md:aspect-video"
                     />
                 ) }
@@ -89,25 +98,26 @@ export default function ReceiptScanning() {
                 </button>
 
                 <button
-                    className={`text-3xl p-3 ${!!capturedImage ? "bg-neutral-800" : "bg-dark-accent"} text-white rounded-full cursor-pointer`}
+                    className={`text-3xl p-3 ${!!imageUrl ? "bg-neutral-800" : "bg-dark-accent"} text-white rounded-full cursor-pointer`}
                     onClick={() => captureImage()}
-                    disabled={!!capturedImage}
+                    disabled={!!imageUrl}
                 >
                     <TiCameraOutline />
                 </button>
 
                 <button
                     className="text-dark-secondary hover:text-white hover:font-semibold duration-150 disabled:cursor-not-allowed"
-                    disabled={!capturedImage}
+                    disabled={!imageUrl}
                     onClick={resetTakenImage}
                 >
                     Retake
                 </button>
             </div>
 
-            { !!capturedImage && (
+            { !!imageUrl && (
                 <button
                     className="bg-dark-accent text-white rounded-lg m-4 p-3 text-semibold duration-150"
+                    onClick={handleSubmit}
                 >Lorum Ipsum LOL</button>
             ) }
 

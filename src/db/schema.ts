@@ -29,17 +29,18 @@ export const receiptsTable = pgTable("receipts", {
 
 export const receiptUsersTable = pgTable("receipt_users", {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-    receiptId: integer().notNull().references(() => receiptsTable.id, { onDelete: "cascade" }),
+    receiptId: integer("receipt_id").notNull().references(() => receiptsTable.id, { onDelete: "cascade" }),
     userId: integer("user_id").references(() => usersTable.id, { onDelete: "cascade" }),
     userName: varchar("user_name", { length: 255 }),
+    didPay: boolean("did_pay").default(false),
 });
 
 export const receiptItemsTable = pgTable("receipt_items", {
-    id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    receiptId: integer().notNull().references(() => receiptsTable.id, { onDelete: "cascade" }),
-    quantity: integer().notNull(),
-    name: varchar({ length: 255 }).notNull(),
-    unitCost: integer().notNull(),
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    receiptId: integer("receipt_id").notNull().references(() => receiptsTable.id, { onDelete: "cascade" }),
+    quantity: integer("quantity").notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
+    unitCost: numeric("unit_cost").notNull(),
 });
 
 export const receiptItemSharesTable = pgTable("receipt_item_shares", {
