@@ -7,6 +7,7 @@ export default function GettingStarted() {
             <h2 className="text-3xl font-semibold">Getting Started</h2>
             <p className="mb-5 text-dark-secondary">Getting started with PayMeLah! is as easy three main steps.</p>
             <div className="flex flex-row place-content-between items-center gap-2 md:gap-10">
+                
                 <div className="flex-1 bg-dark-background p-2 px-4 rounded-lg">
                     <div className="inline-flex flex-row items-center gap-3 text-md md:text-xl font-semibold">
                         <MdDocumentScanner className="text-xl md:text-2xl" />
@@ -20,7 +21,7 @@ export default function GettingStarted() {
                         <MdFormatListBulleted className="text-xl md:text-2xl" />
                         <p>Split</p>
                     </div>
-                    <p className="text-dark-secondary">Upload or take a picture of the receipt.</p>
+                    <p className="text-dark-secondary">Assign items to each friend.</p>
                 </div>
                 <FaArrowRightLong className="text-xl md:text-2xl" />
                 <div className="flex-1 bg-dark-background p-2 px-4 rounded-lg items-center">

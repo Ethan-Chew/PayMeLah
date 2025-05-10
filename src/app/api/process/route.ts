@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from 'openai';
-import { ParsedReceipt } from "../schema";
 import dotenv from 'dotenv';
+import { ParsedReceipt } from "@/db/types";
 dotenv.config();
 
 // const client = new OpenAI({

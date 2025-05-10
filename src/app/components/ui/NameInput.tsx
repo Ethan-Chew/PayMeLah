@@ -27,13 +27,12 @@ export default function NameInput({ names, addName, removeName }: INameInput) {
 
     return (
         <div className="w-full flex-row flex gap-2 px-4 py-2 border border-dark-border">
-            { names.map((name) => ( <NameTag name={name} removeName={removeName} /> ))}
+            { names.map((name, index) => ( <NameTag key={index} name={name} removeName={removeName} /> ))}
             <input 
                 className="flex-1 focus:outline-none"
                 onKeyDown={handleKeyPress}
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
-                required
             />
         </div>
     )
