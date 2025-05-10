@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="en">
       <AppDataProvider>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-row`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           {children}
         </body>

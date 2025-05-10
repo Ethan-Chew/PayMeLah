@@ -74,6 +74,12 @@ export default function ReceiptScanning() {
             <SideBar />
             <div className="ml-0 sm:ml-[25%] lg:ml-[20%] flex-1 flex flex-col items-center justify-center gap-5">
                 <h1 className="text-white font-semibold text-3xl">Capture your Receipt</h1>
+
+                <div className="flex flex-col items-center justify-center text-white">
+                    <p className="text-xl font-semibold mb-1">Upload your Receipt</p>
+                    <p className="text-dark-secondary">Supports JPG and PNG files</p>
+                </div>
+
                 <div className="m-4 md:m-0">
                     { !imageUrl && (
                         <video
@@ -81,7 +87,7 @@ export default function ReceiptScanning() {
                             autoPlay
                             playsInline
                             ref={videoRef}
-                            className="border-2 dark:border-dark-border rounded-lg overflow-hidden w-auto h-full md:max-w-[50vw] md:aspect-video box-border"
+                            className="border-2 dark:border-dark-border rounded-lg overflow-hidden w-auto h-full md:max-w-[50vw] box-border"
                         />
                     ) }
 
@@ -89,7 +95,7 @@ export default function ReceiptScanning() {
                         <img
                             alt="Captured Image"
                             src={decodeURIComponent(imageUrl)}
-                            className="border-2 dark:border-dark-border rounded-lg overflow-hidden w-full h-full md:max-w-[50vw] md:aspect-video"
+                            className="border-2 dark:border-dark-border rounded-lg overflow-hidden w-full h-full md:max-w-[50vw]"
                         />
                     ) }
                 </div>
