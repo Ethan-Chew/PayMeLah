@@ -62,19 +62,20 @@ export async function POST(request: Request) {
         serviceCharge|0.99
         `
 
+        console.log(apiResponse.trim().split(/\r?\n/));
         const parsedReceipt: ParsedReceipt = { items: [], gst: -1, serviceCharge: -1 };
-        for (const line in apiResponse.trim().split(/\r?\n/)) {
+        for (const line of apiResponse.trim().split(/\r?\n/)) {
             const splittedLine = line.split("|");
 
             if (splittedLine.length === 3) { // Receipt Item
                 parsedReceipt.items.push({
-                    name: splittedLine[0],
+                    name: splittedLine[0].trim(),
                     quantity: parseInt(splittedLine[1]),
                     unitCost: parseFloat(splittedLine[2]) / parseInt(splittedLine[1])
                 });
-            } else if (splittedLine[0].toLowerCase() === "gst") {
+            } else if (splittedLine[0].trim().toLowerCase() === "gst") {
                 parsedReceipt.gst = parseFloat(splittedLine[1]) || 0
-            } else if (splittedLine[0].toLowerCase() === "servicecharge") {
+            } else if (splittedLine[0].trim().toLowerCase() === "servicecharge") {
                 parsedReceipt.serviceCharge = parseFloat(splittedLine[1]) || 0
             }
         }

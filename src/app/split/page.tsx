@@ -47,7 +47,7 @@ export default function SplitCosts() {
 
             if (response.ok) {
                 const data = await response.json();
-                setReceiptData(data);
+                setReceiptData(data.receipt);
                 return;
             }
 
@@ -65,13 +65,13 @@ export default function SplitCosts() {
     return (
         <div className="bg-dark-background min-h-screen w-screen flex flex-row">
             <SideBar currentStep={PayMeLahSteps.Split} />
-            <div className="ml-0 sm:ml-[25%] lg:ml-[20%] flex-1 flex flex-col p-5 py-10 gap-5 max-w-full">
+            <div className="ml-0 sm:ml-[25%] lg:ml-[20%] flex-1 flex flex-col py-10 p-5 gap-5 border-box">
                 <div>
                     <h1 className="text-3xl font-bold text-white">Split with your Friends</h1>
                     <p className="text-dark-secondary">Assign items to each friend and share the list with them.</p>
                 </div>
 
-                <div className="p-5 rounded-lg bg-dark-container text-white">
+                <div className="p-5 rounded-lg border border-dark-border text-white border-box">
                     <div className="text-2xl inline-flex flex-row items-center gap-3">
                         <FaMoneyBillWave />
                         <h2 className="font-semibold">Receipt Details</h2>
@@ -84,15 +84,15 @@ export default function SplitCosts() {
                     />
                 </div>
 
-                <div className="p-5 rounded-lg bg-dark-container text-white flex flex-row gap-5">
+                <div className="p-5 rounded-lg border border-dark-border text-white flex flex-row gap-5 border-box">
                     {/* Scanned Receipt Display */}
-                    <div className="flex-1">
+                    {/* <div className="flex-1">
                         <div className="text-2xl inline-flex flex-row items-center gap-3 mb-3">
                             <FaCamera />
                             <h2 className="font-semibold text-white">Your Scanned Receipt</h2>
                         </div>
-                        <img src={imageUrl!} />
-                    </div>
+                        <img src={imageUrl!} className="w-auto h-[300px]" />
+                    </div> */}
 
                     {/* Split Receipt */}
                     <div className="flex-1">
@@ -114,7 +114,6 @@ export default function SplitCosts() {
                             </div>
                         </div>
 
-                        {/*  */}
                     </div>
                 </div>
             </div>
