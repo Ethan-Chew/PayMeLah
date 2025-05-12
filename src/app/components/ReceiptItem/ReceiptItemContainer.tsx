@@ -1,13 +1,34 @@
 "use client";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa6";
-import { ReceiptItem } from "@/db/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import CustomSplitContainer from "./CustomSplitContainer";
+import { IReceiptItem } from "./IReceiptItem";
 
-export default function ReceiptItemContainer({ item, people }: { item: ReceiptItem, people: string[] }) {
+export default function ReceiptItemContainer({ item, people, addReceiptItemShare, clearItemShares }: IReceiptItem) {
     const [ selectedPerson, setSelectedPerson ] = useState<string>("select");
     const [ isModalOpen, setIsModalOpen ] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (selectedPerson === "select") return;
+        clearItemShares!(item.name);
+
+        // Handle Split Equally
+        if (selectedPerson === "split") {
+            const share = item.quantity / people.length;
+            for (const person of people) {
+                addReceiptItemShare(item.name, person, share);
+            }
+            return;
+        }
+
+        // Handle Individual Split
+        if (selectedPerson !== "custom") {
+            addReceiptItemShare(item.name, selectedPerson, item.quantity);
+            return;
+        }
+
+    }, [selectedPerson]);
 
     return (
         <div className="py-5 border-b border-dark-border">
@@ -51,6 +72,8 @@ export default function ReceiptItemContainer({ item, people }: { item: ReceiptIt
                     <CustomSplitContainer
                         item={item}
                         people={people}
+                        addReceiptItemShare={addReceiptItemShare}
+                        clearItemShares={clearItemShares}
                     />
                 ) }
             </AnimatePresence>

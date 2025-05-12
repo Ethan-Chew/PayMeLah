@@ -9,9 +9,10 @@ import { PayMeLahSteps } from "../components/ProgressBar/data";
 
 // React Icons
 import { FaMoneyBillWave, FaCamera } from "react-icons/fa";
-import { BsFillPeopleFill } from "react-icons/bs";
+import { BsFillPeopleFill, BsFillBarChartFill } from "react-icons/bs";
 import Toast from "../components/ui/Toast";
 import ReceiptItemContainer from "../components/ReceiptItem/ReceiptItemContainer";
+import PersonSummaryItem from "../components/PersonSummaryItem";
 
 export default function SplitCosts() {
     const router = useRouter();
@@ -24,6 +25,7 @@ export default function SplitCosts() {
     });
 
     const [ receiptData, setReceiptData ] = useState<ParsedReceipt | null>(null);
+    const [ receiptItems, setReceiptItems ] = useState<any[]>([]);
     const [ receiptFormData, setReceiptFormData ] = useState<CreateReceiptModal>({
         title: "",
         date: new Date().toLocaleDateString('en-SG'),
@@ -31,7 +33,7 @@ export default function SplitCosts() {
         others: [],
         saveGroup: false
     });
-    
+
     useEffect(() => {
         const processReceipt = async () => {
             // if (!imageUrl) router.push("/");
@@ -49,6 +51,7 @@ export default function SplitCosts() {
             if (response.ok) {
                 const data = await response.json();
                 setReceiptData(data.receipt);
+                setReceiptItems(data.receipt.items);
                 return;
             }
 
@@ -62,6 +65,52 @@ export default function SplitCosts() {
 
         processReceipt();
     }, []);
+
+    // Handle Receipt Item Share
+    const clearItemShares = (itemName: string) => {
+        if (!receiptData) return;
+        setReceiptItems((items) => {
+            // Find the Item to update
+            const item = items.find((item) => item.name === itemName);
+            if (!item) return items;
+            // Clear the shares of the item
+            const newItem = {
+                ...item,
+                shares: []
+            };
+            // Update the item in the list
+            const newItems = items.map((item) => {
+                if (item.name === itemName) {
+                    return newItem;
+                }
+                return item;
+            });
+            return newItems;
+        });
+    }
+
+    const addReceiptItemShare = (itemName: string, userName: string, share: number) => {
+        setReceiptItems((items) => {
+            // Find the Item to update
+            const item = items.find((item) => item.name === itemName);
+            if (!item) return items;
+            // Create a new item share
+            const newShare = { userName: userName, share: share };
+            // Add the new share to the item
+            const newItem = {
+                ...item,
+                shares: item.shares ? [...item.shares, newShare] : [newShare]
+            };
+            // Update the item in the list
+            const newItems = items.map((item) => {
+                if (item.name === itemName) {
+                    return newItem;
+                }
+                return item;
+            });
+            return newItems;
+        });
+    }
 
     return (
         <div className="bg-dark-background min-h-screen flex flex-row">
@@ -124,15 +173,42 @@ export default function SplitCosts() {
                                     key={index}
                                     item={item}
                                     people={[...receiptFormData.others, receiptFormData.payee].filter((person) => person !== "")}
+                                    addReceiptItemShare={addReceiptItemShare}
+                                    clearItemShares={clearItemShares}
                                 />
                             )) }
                         </div>
                     </div>
                 </div>
 
+                {/* Separator */}
+                <div className="w-full inline-flex flex-row items-center justify-center my-8">
+                    <div className="h-[1px] bg-dark-border w-[50vw]" />
+                </div>
+
                 {/* Receipt Summary */}
-                <div className="p-5 rounded-lg border border-dark-border text-white border-box">
-                    
+                <div className="text-white">
+                    <div className="text-2xl inline-flex flex-row items-center gap-3 mb-3">
+                        <BsFillBarChartFill />
+                        <h2 className="font-semibold text-white">Summary</h2>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-5">
+                            {
+                                [...receiptFormData.others, receiptFormData.payee]
+                                    .filter((person) => person !== "")
+                                    .map((person, index) => (
+                                        <PersonSummaryItem
+                                            key={index}
+                                            name={person}
+                                            receiptItems={receiptItems.filter((item) => {
+                                                if (!item.shares) return false;
+                                                return item.shares.some((share: any) => share.userName === person);
+                                            })}
+                                        />
+                                    ))
+                            }
+                    </div>
                 </div>
             </div>
             

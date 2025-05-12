@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import Stepper from "../ui/Stepper";
-import { ReceiptItem } from "@/db/types";
+import { IReceiptItem } from "./IReceiptItem";
 
-export default function CustomSplitContainer({ item, people }: { item: ReceiptItem, people: string[] }) {
+export default function CustomSplitContainer({ item, people, addReceiptItemShare, clearItemShares }: IReceiptItem) {
     const [ splitPeopleInfo, setSplitPeopleInfo ] = useState<{ name: string, amount: number }[]>(people.map((person) => ({ name: person, amount: 0 })));
     const [ status, setStatus ] = useState({
         isError: false,
@@ -38,6 +38,14 @@ export default function CustomSplitContainer({ item, people }: { item: ReceiptIt
                 isError: false,
                 message: 'Quantity is valid!'
             });
+
+            // Clear and Add Item Shares
+            clearItemShares(item.name);
+            for (const person of splitPeopleInfo) {
+                if (person.amount > 0) {
+                    addReceiptItemShare(item.name, person.name, person.amount);
+                }
+            }
         }
     }, [splitPeopleInfo]);
 
