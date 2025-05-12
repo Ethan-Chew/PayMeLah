@@ -3,8 +3,8 @@ import { useState } from "react";
 import { useAppData } from "../providers/AppDataProvider";
 import { useRouter } from "next/navigation";
 import SideBar from "../components/SideBar";
-import DragAndDrop from "../components/ui/FileManagement/DragAndDrop";
-import CameraCapture from "../components/ui/FileManagement/CameraCapture";
+import DragAndDrop from "../components/FileManagement/DragAndDrop";
+import CameraCapture from "../components/FileManagement/CameraCapture";
 
 export default function ReceiptScanning() {
     const router = useRouter();

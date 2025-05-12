@@ -1,5 +1,5 @@
-import { PayMeLahSteps } from "./ui/ProgressBar/data";
-import VerticalProgressBar from "./ui/ProgressBar/VerticalProgressBar";
+import { PayMeLahSteps } from "./ProgressBar/data";
+import VerticalProgressBar from "./ProgressBar/VerticalProgressBar";
 
 export default function SideBar({ currentStep = PayMeLahSteps.Scan }: { currentStep?: PayMeLahSteps }) {
     return (

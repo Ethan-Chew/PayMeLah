@@ -1,7 +1,7 @@
 import { MdOutlineFileUpload } from "react-icons/md";
 import { IoCameraOutline } from "react-icons/io5";
 import { ChangeEvent, DragEvent, useState } from "react";
-import Toast from "../Toast";
+import Toast from "../ui/Toast";
 import { FaXmark } from "react-icons/fa6";
 
 interface IDragAndDrop {

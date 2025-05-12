@@ -1,6 +1,6 @@
-import GettingStarted from "./components/ui/GettingStarted";
+import GettingStarted from "./components/GettingStarted";
 import ScanReceiptButton from "./components/ui/ScanReceiptButton";
-import TermsAndPrivacy from "./components/ui/TermsAndPrivacy";
+import TermsAndPrivacy from "./components/TermsAndPrivacy";
 
 export default function Home() {
   return (

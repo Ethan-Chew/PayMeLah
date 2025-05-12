@@ -1,5 +1,5 @@
 "use client"
-import NameInput from "../NameInput";
+import NameInput from "../ui/NameInput";
 import { FaArrowRight } from "react-icons/fa6";
 import { CreateReceiptModal } from "@/db/types";
 import { FormEvent } from "react";
@@ -41,7 +41,7 @@ export default function ReceiptDetailModal({ formData, setFormData}: IReceiptDet
                 <div className="flex-1">
                     <p className="text-lg font-semibold mb-2">Date of Receipt</p>
                     <input
-                        className="px-4 py-2 border border-dark-border w-full focus:outline-none"
+                        className="px-4 py-2 border border-dark-border text-white w-full focus:outline-none"
                         type="date"
                         value={formData.date}
                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}

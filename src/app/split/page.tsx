@@ -3,14 +3,15 @@ import { useEffect, useState } from "react";
 import { useAppData } from "../providers/AppDataProvider";
 import { useRouter } from "next/navigation";
 import { CreateReceiptModal, ParsedReceipt } from "@/db/types";
-import ReceiptDetailModal from "../components/ui/modals/ReceiptDetailModal";
+import ReceiptDetailModal from "../components/modals/ReceiptDetailModal";
 import SideBar from "../components/SideBar";
-import { PayMeLahSteps } from "../components/ui/ProgressBar/data";
+import { PayMeLahSteps } from "../components/ProgressBar/data";
 
 // React Icons
 import { FaMoneyBillWave, FaCamera } from "react-icons/fa";
 import { BsFillPeopleFill } from "react-icons/bs";
 import Toast from "../components/ui/Toast";
+import ReceiptItemContainer from "../components/ReceiptItem/ReceiptItemContainer";
 
 export default function SplitCosts() {
     const router = useRouter();
@@ -63,14 +64,15 @@ export default function SplitCosts() {
     }, []);
 
     return (
-        <div className="bg-dark-background min-h-screen w-screen flex flex-row">
+        <div className="bg-dark-background min-h-screen flex flex-row">
             <SideBar currentStep={PayMeLahSteps.Split} />
             <div className="ml-0 sm:ml-[25%] lg:ml-[20%] flex-1 flex flex-col py-10 p-5 gap-5 border-box">
-                <div>
+                <header>
                     <h1 className="text-3xl font-bold text-white">Split with your Friends</h1>
                     <p className="text-dark-secondary">Assign items to each friend and share the list with them.</p>
-                </div>
+                </header>
 
+                {/* Receipt Details Modal */}
                 <div className="p-5 rounded-lg border border-dark-border text-white border-box">
                     <div className="text-2xl inline-flex flex-row items-center gap-3">
                         <FaMoneyBillWave />
@@ -84,6 +86,7 @@ export default function SplitCosts() {
                     />
                 </div>
 
+                {/* Split Receipt Items */}
                 <div className="p-5 rounded-lg border border-dark-border text-white flex flex-row gap-5 border-box">
                     {/* Scanned Receipt Display */}
                     {/* <div className="flex-1">
@@ -114,14 +117,29 @@ export default function SplitCosts() {
                             </div>
                         </div>
 
+                        {/* Receipt Items */}
+                        <div>
+                            { receiptData?.items.map((item, index) => (
+                                <ReceiptItemContainer
+                                    key={index}
+                                    item={item}
+                                    people={[...receiptFormData.others, receiptFormData.payee].filter((person) => person !== "")}
+                                />
+                            )) }
+                        </div>
                     </div>
+                </div>
+
+                {/* Receipt Summary */}
+                <div className="p-5 rounded-lg border border-dark-border text-white border-box">
+                    
                 </div>
             </div>
             
             { error.isDisplayed && (
                 <Toast
-                    title="Receipt Processed"
-                    description="Your receipt has been processed successfully. You can now split the costs with your friends."
+                    title={error.title}
+                    description={error.description}
                     hideError = {() => setError({ ...error, isDisplayed: false })}
                 />
             ) }
