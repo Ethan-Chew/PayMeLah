@@ -8,11 +8,12 @@ import SideBar from "../components/SideBar";
 import { PayMeLahSteps } from "../components/ProgressBar/data";
 
 // React Icons
-import { FaMoneyBillWave, FaCamera } from "react-icons/fa";
+import { FaMoneyBillWave } from "react-icons/fa";
 import { BsFillPeopleFill, BsFillBarChartFill } from "react-icons/bs";
 import Toast from "../components/ui/Toast";
 import ReceiptItemContainer from "../components/ReceiptItem/ReceiptItemContainer";
 import PersonSummaryItem from "../components/PersonSummaryItem";
+import ConfirmSaveReceipt from "../components/modals/ConfirmSaveReceipt";
 
 export default function SplitCosts() {
     const router = useRouter();
@@ -33,6 +34,7 @@ export default function SplitCosts() {
         others: [],
         saveGroup: false
     });
+    const [ confirmSharePopup, setConfirmSharePopup ] = useState(false);
 
     useEffect(() => {
         const processReceipt = async () => {
@@ -115,7 +117,7 @@ export default function SplitCosts() {
     return (
         <div className="bg-dark-background min-h-screen flex flex-row">
             <SideBar currentStep={PayMeLahSteps.Split} />
-            <div className="ml-0 sm:ml-[25%] lg:ml-[20%] flex-1 flex flex-col py-10 p-5 gap-5 border-box">
+            <div className="ml-0 sm:ml-[25%] lg:ml-[20%] flex-1 flex flex-col py-10 p-5 gap-5 border-box max-w-full">
                 <header>
                     <h1 className="text-3xl font-bold text-white">Split with your Friends</h1>
                     <p className="text-dark-secondary">Assign items to each friend and share the list with them.</p>
@@ -136,48 +138,36 @@ export default function SplitCosts() {
                 </div>
 
                 {/* Split Receipt Items */}
-                <div className="p-5 rounded-lg border border-dark-border text-white flex flex-row gap-5 border-box">
-                    {/* Scanned Receipt Display */}
-                    {/* <div className="flex-1">
-                        <div className="text-2xl inline-flex flex-row items-center gap-3 mb-3">
-                            <FaCamera />
-                            <h2 className="font-semibold text-white">Your Scanned Receipt</h2>
-                        </div>
-                        <img src={imageUrl!} className="w-auto h-[300px]" />
-                    </div> */}
+                <div className="p-5 rounded-lg border border-dark-border text-white border-box">
+                    <div className="text-2xl inline-flex flex-row items-center gap-3 mb-3">
+                        <BsFillPeopleFill />
+                        <h2 className="font-semibold text-white">Split with Friends</h2>
+                    </div>
 
-                    {/* Split Receipt */}
-                    <div className="flex-1">
-                        <div className="text-2xl inline-flex flex-row items-center gap-3 mb-3">
-                            <BsFillPeopleFill />
-                            <h2 className="font-semibold text-white">Split with Friends</h2>
-                        </div>
-
-                        {/* GST and Service Charge Display */}
-                        <div className="flex flex-row gap-10">
-                            <div>
-                                <p className="text-dark-secondary">GST</p>
-                                <p className="text-2xl font-semibold text-white">{ receiptData ? `$${receiptData.gst}` : "Loading..." }</p>
-                            </div>
-
-                            <div>
-                                <p className="text-dark-secondary">Service Charge</p>
-                                <p className="text-2xl font-semibold text-white">{ receiptData ? `$${receiptData.serviceCharge}` : "Loading..." }</p>
-                            </div>
-                        </div>
-
-                        {/* Receipt Items */}
+                    {/* GST and Service Charge Display */}
+                    <div className="flex flex-row gap-10">
                         <div>
-                            { receiptData?.items.map((item, index) => (
-                                <ReceiptItemContainer
-                                    key={index}
-                                    item={item}
-                                    people={[...receiptFormData.others, receiptFormData.payee].filter((person) => person !== "")}
-                                    addReceiptItemShare={addReceiptItemShare}
-                                    clearItemShares={clearItemShares}
-                                />
-                            )) }
+                            <p className="text-dark-secondary">GST</p>
+                            <p className="text-2xl font-semibold text-white">{ receiptData ? `$${receiptData.gst}` : "Loading..." }</p>
                         </div>
+
+                        <div>
+                            <p className="text-dark-secondary">Service Charge</p>
+                            <p className="text-2xl font-semibold text-white">{ receiptData ? `$${receiptData.serviceCharge}` : "Loading..." }</p>
+                        </div>
+                    </div>
+
+                    {/* Receipt Items */}
+                    <div>
+                        { receiptData?.items.map((item, index) => (
+                            <ReceiptItemContainer
+                                key={index}
+                                item={item}
+                                people={[...receiptFormData.others, receiptFormData.payee].filter((person) => person !== "")}
+                                addReceiptItemShare={addReceiptItemShare}
+                                clearItemShares={clearItemShares}
+                            />
+                        )) }
                     </div>
                 </div>
 
@@ -193,7 +183,7 @@ export default function SplitCosts() {
                         <h2 className="font-semibold text-white">Summary</h2>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                             {
                                 [...receiptFormData.others, receiptFormData.payee]
                                     .filter((person) => person !== "")
@@ -210,6 +200,20 @@ export default function SplitCosts() {
                             }
                     </div>
                 </div>
+
+                {/* Save Confirmation */}
+                <div className="text-white flex flex-col md:flex-row place-content-between">
+                    <div>
+                        <p className="text-lg font-bold">Done Editing?</p>
+                        <p className="text-dark-secondary">You will not be able to edit it after submission (for now...).</p>
+                    </div>
+                    <button
+                        className="bg-dark-accent hover:bg-accent py-2 px-4 rounded-lg duration-150 cursor-pointer"
+                        onClick={() => setConfirmSharePopup(true)}
+                    >
+                        I'm Done!
+                    </button>
+                </div>
             </div>
             
             { error.isDisplayed && (
@@ -219,6 +223,14 @@ export default function SplitCosts() {
                     hideError = {() => setError({ ...error, isDisplayed: false })}
                 />
             ) }
+
+            {/* { confirmSharePopup && receiptData !== null && ( */}
+                <ConfirmSaveReceipt
+                    receiptFormData={receiptFormData}
+                    receiptItems={receiptItems}
+                    receiptData={receiptData}
+                />
+            {/* ) } */}
         </div>
     )
 }

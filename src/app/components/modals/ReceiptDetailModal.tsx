@@ -25,7 +25,7 @@ export default function ReceiptDetailModal({ formData, setFormData}: IReceiptDet
 
     return (
         <form className="flex flex-col gap-4 w-full text-white">
-            <div className="w-full flex flex-row gap-5">
+            <div className="w-full flex flex-col md:flex-row gap-5">
                 <div className="flex-1">
                     <p className="text-lg font-semibold mb-2">Receipt Title</p>
                     <input
@@ -50,7 +50,7 @@ export default function ReceiptDetailModal({ formData, setFormData}: IReceiptDet
                 </div>
             </div>
 
-            <div className="w-full flex flex-row gap-5">
+            <div className="w-full flex flex-col md:flex-row gap-5">
                 <div className="flex-1">
                     <p className="text-lg font-semibold mb-2">Who Paid?</p>
                     <input

@@ -7,9 +7,9 @@ export const usersTable = pgTable("users", {
 
 export const groupTable = pgTable("groups", {
     id: uuid("id").primaryKey().defaultRandom(),
-    name: text("name").notNull(),
-    createdAt: timestamp("created_at").notNull(),
-    updatedAt: timestamp("updated_at").notNull(),
+    name: text("name"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const groupUsersTable = pgTable("group_users", {
@@ -25,7 +25,7 @@ export const receiptsTable = pgTable("receipts", {
     groupId: uuid("group_id").notNull().references(() => groupTable.id, { onDelete: "cascade" }),
     gst: numeric("gst").notNull(),
     serviceCharge: numeric("service_charge").notNull(),
-    createdAt: timestamp("created_at").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const receiptUsersTable = pgTable("receipt_users", {
