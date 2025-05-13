@@ -28,14 +28,6 @@ export const receiptsTable = pgTable("receipts", {
     createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const receiptUsersTable = pgTable("receipt_users", {
-    id: uuid("id").primaryKey().defaultRandom(),
-    receiptId: uuid("receipt_id").notNull().references(() => receiptsTable.id, { onDelete: "cascade" }),
-    userId: uuid("user_id").references(() => usersTable.id, { onDelete: "cascade" }),
-    userName: varchar("user_name", { length: 255 }),
-    didPay: boolean("did_pay").default(false),
-});
-
 export const receiptItemsTable = pgTable("receipt_items", {
     id: uuid("id").primaryKey().defaultRandom(),
     receiptId: uuid("receipt_id").notNull().references(() => receiptsTable.id, { onDelete: "cascade" }),
