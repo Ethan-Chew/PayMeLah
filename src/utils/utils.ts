@@ -1,22 +1,57 @@
+"use server";
 import { groupTable, groupUsersTable, receiptItemSharesTable, receiptItemsTable, receiptsTable } from "@/db/schema";
-import { CreateReceiptModal } from "@/db/types";
+import { CreateReceiptModal, ParsedReceipt } from "@/db/types";
 import { db } from "@/utils/db";
-import { NextResponse } from "next/server";
+import OpenAI from 'openai';
 
-export async function POST(request: Request) {
-  try {
-    // Parse the request body
-    const body = await request.json();
-    const { receiptFormData, receiptItems, gst, serviceCharge }: { receiptFormData: CreateReceiptModal, receiptItems: any, gst: number, serviceCharge: number } = body;
-    // Validate required data
-    // if (!receiptFormData  || !receiptItems|| !gst || !serviceCharge) {
-    //   return NextResponse.json(
-    //     { error: 'Missing required receipt data' }, 
-    //     { status: 400 }
-    //   );
-    // }
+import dotenv from 'dotenv';
+dotenv.config();
 
-    // Save the receipt using the transaction logic
+export async function parseReceiptData(fileUrl: string) {
+    if (!fileUrl) {
+        return null;
+    }
+
+    // Use the OpenAI API to Analyse the Receipt
+    // const apiResponse = await client.chat.completions.create({
+    //     model: "gpt-4.1-nano"
+    // });
+    // MOCK: API Response
+    const apiResponse = `
+    Veg Sandwich|1|5.75  
+    Latte|2|4.25  
+    Blueberry Muffin|0|0  
+    Green Tea|1|3.15  
+    Pasta Alfredo|1|12.99  
+    Sparkling Water|1|2.5  
+    Fruit Bowl|2|0  
+    gst|0  
+    serviceCharge|0.99
+    `
+
+    const parsedReceipt: ParsedReceipt = { items: [], gst: -1, serviceCharge: -1 };
+    for (const line of apiResponse.trim().split(/\r?\n/)) {
+        const splittedLine = line.split("|");
+
+        if (splittedLine.length === 3) { // Receipt Item
+            if (parseInt(splittedLine[1]) !== 0) {
+                parsedReceipt.items.push({
+                    name: splittedLine[0].trim(),
+                    quantity: parseInt(splittedLine[1]),
+                    unitCost: parseFloat(splittedLine[2]) / parseInt(splittedLine[1])
+                });   
+            }
+        } else if (splittedLine[0].trim().toLowerCase() === "gst") {
+            parsedReceipt.gst = parseFloat(splittedLine[1]) || 0
+        } else if (splittedLine[0].trim().toLowerCase() === "servicecharge") {
+            parsedReceipt.serviceCharge = parseFloat(splittedLine[1]) || 0
+        }
+    }
+
+    return parsedReceipt;
+}
+
+export async function saveReceiptToDB(receiptFormData: CreateReceiptModal, receiptItems: any, gst: number, serviceCharge: number) {
     let receiptId: string = "";
     await db.transaction(async (tx) => {
         // Create the Group
@@ -68,15 +103,5 @@ export async function POST(request: Request) {
         }
     });
 
-    // Return the receipt ID on success
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Receipt saved successfully', 
-      receiptId 
-    }, { status: 201 });
-    
-  } catch (err) {
-    console.error('Error saving receipt:', err);
-    return NextResponse.json({ error: 'Failed to save receipt' }, { status: 500 });
-  }
+    return receiptId;
 }

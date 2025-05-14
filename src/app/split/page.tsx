@@ -14,6 +14,7 @@ import Toast from "../components/ui/Toast";
 import ReceiptItemContainer from "../components/ReceiptItem/ReceiptItemContainer";
 import PersonSummaryItem from "../components/PersonSummaryItem";
 import ConfirmSaveReceipt from "../components/modals/ConfirmSaveReceipt";
+import { parseReceiptData } from "@/utils/utils";
 
 export default function SplitCosts() {
     const router = useRouter();
@@ -29,7 +30,7 @@ export default function SplitCosts() {
     const [ receiptItems, setReceiptItems ] = useState<any[]>([]);
     const [ receiptFormData, setReceiptFormData ] = useState<CreateReceiptModal>({
         title: "",
-        date: new Date().toLocaleDateString('en-SG'),
+        date: new Date().toLocaleDateString('en-SG').replace(/\//g, "-"),
         payee: "",
         others: [],
         saveGroup: false
@@ -40,20 +41,10 @@ export default function SplitCosts() {
         const processReceipt = async () => {
             if (!imageUrl) router.push("/");
 
-            const response = await fetch("/api/process", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    image: imageUrl 
-                })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setReceiptData(data.receipt);
-                setReceiptItems(data.receipt.items);
+            const receiptResponse = await parseReceiptData(imageUrl as string);
+            if (receiptResponse) {
+                setReceiptData(receiptResponse);
+                setReceiptItems(receiptResponse.items);
                 return;
             }
 
@@ -61,7 +52,7 @@ export default function SplitCosts() {
             setError({
                 isDisplayed: true,
                 title: "Error Processing Receipt",
-                description: (await response.json()).error
+                description: "An error occurred while processing the receipt. Please try again."
             });
         }
 

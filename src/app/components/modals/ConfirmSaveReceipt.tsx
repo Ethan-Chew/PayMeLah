@@ -7,6 +7,7 @@ import { FaXmark } from "react-icons/fa6";
 import Confetti from 'react-confetti'
 import Loader from "../ui/Loader";
 import { useAppData } from "@/app/providers/AppDataProvider";
+import { saveReceiptToDB } from "@/utils/utils";
 
 interface IConfirmSaveReceiptProps {
     receiptFormData: CreateReceiptModal,
@@ -24,23 +25,8 @@ export default function ConfirmSaveReceipt({receiptFormData, receiptItems, recei
 
     useEffect(() => {
         const saveToDB = async () => {
-            const response = await fetch("/api/save", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    receiptFormData,
-                    receiptItems,
-                    gst: receiptData?.gst || 0,
-                    serviceCharge: receiptData?.serviceCharge || 0
-                })
-            });
-            if (!response.ok) {
-                console.error("Error saving receipt:", response.statusText);
-            }
-            const data = await response.json();
-            setSavedReceiptId(data.receiptId);
+            const receiptId = await saveReceiptToDB(receiptFormData, receiptItems, receiptData?.gst || 0, receiptData?.serviceCharge || 0);
+            setSavedReceiptId(receiptId);
             setIsLoading(false);
             setTimeout(() => {
                 setIsConfetti(true);
