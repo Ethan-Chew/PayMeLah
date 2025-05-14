@@ -38,7 +38,7 @@ export default function SplitCosts() {
 
     useEffect(() => {
         const processReceipt = async () => {
-            // if (!imageUrl) router.push("/");
+            if (!imageUrl) router.push("/");
 
             const response = await fetch("/api/process", {
                 method: "POST",
@@ -224,13 +224,14 @@ export default function SplitCosts() {
                 />
             ) }
 
-            {/* { confirmSharePopup && receiptData !== null && ( */}
+            { confirmSharePopup && receiptData !== null && (
                 <ConfirmSaveReceipt
                     receiptFormData={receiptFormData}
                     receiptItems={receiptItems}
                     receiptData={receiptData}
+                    hideModal={() => setConfirmSharePopup(false)}
                 />
-            {/* ) } */}
+            ) }
         </div>
     )
 }
