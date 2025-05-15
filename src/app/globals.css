@@ -3,18 +3,19 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-background: #f9f9f9;
-  --color-secondary-background: #ddd;
-  --color-accent: #12918F;
-  --color-border: #ddd;
-  --color-secondary: #4B5563;
+  --color-background: #f8f9fa;
+  --color-secondary-background: #e9ecef;
+  --color-accent: #17a2b8;
+  --color-border: #ced4da;
+  --color-secondary: #495057;
 
+  /* Dark Theme */
   --color-dark-background: #121212;
-  --color-dark-secondary-background: #1e1e1e;
-  --color-dark-accent: #29b4b1;
-  --color-dark-border: #3a3a3a;
-  --color-dark-secondary: #cccccc;
-  --color-dark-container: #181818;
+  --color-dark-secondary-background: #222222;
+  --color-dark-accent: #3dd5d1;
+  --color-dark-border: #444444;
+  --color-dark-secondary: #d6d6d6;
+  --color-dark-container: #1e1e1e; 
 }
 
 /* Hide Stepper Arrows */

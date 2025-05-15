@@ -169,10 +169,11 @@ export default function SplitCosts() {
 
                 {/* Receipt Summary */}
                 <div className="text-white">
-                    <div className="text-2xl inline-flex flex-row items-center gap-3 mb-3">
+                    <div className="text-2xl inline-flex flex-row items-center gap-3">
                         <BsFillBarChartFill />
                         <h2 className="font-semibold text-white">Summary</h2>
                     </div>
+                    <p className="text-dark-secondary mb-3">GST (9%) and Service Charge (10%) will be split depending on the shares assigned to each member.</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                             {

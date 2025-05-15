@@ -5,6 +5,7 @@ import { db } from "@/utils/db";
 import OpenAI from 'openai';
 
 import dotenv from 'dotenv';
+import { eq } from "drizzle-orm";
 dotenv.config();
 
 export async function parseReceiptData(fileUrl: string) {
@@ -104,4 +105,68 @@ export async function saveReceiptToDB(receiptFormData: CreateReceiptModal, recei
     });
 
     return receiptId;
+}
+
+export interface DisplayedReceipt {
+    name: string;
+    gst: string;
+    serviceCharge: string;
+    receiptItems: any[],
+    members: string[]
+}
+
+export async function getReceiptData(receiptId: string) {
+    const data = await db.select()
+        .from(receiptsTable)
+        .where(eq(receiptsTable.id, receiptId))
+        .innerJoin(receiptItemsTable, eq(receiptsTable.id, receiptItemsTable.receiptId))
+        .innerJoin(receiptItemSharesTable, eq(receiptItemsTable.id, receiptItemSharesTable.itemId))
+        .innerJoin(groupUsersTable, eq(receiptsTable.groupId, groupUsersTable.groupId));
+
+    if (data.length === 0) {
+        return null;
+    }
+
+    const parsedReceipt: DisplayedReceipt = {
+        name: data[0].receipts.name,
+        gst: data[0].receipts.gst,
+        serviceCharge: data[0].receipts.serviceCharge,
+        receiptItems: [],
+        members: [],
+    }
+
+    const addedItems = new Set();
+    const addedUsers = new Set();
+
+    for (const entry of data) {
+        const item = entry.receipt_items;
+        const share = entry.receipt_item_shares;
+        const user = entry.group_users;
+
+        // Add the Item to the receipt items
+        if (!addedItems.has(item.id)) {
+            parsedReceipt.receiptItems.push({
+                name: item.name,
+                quantity: item.quantity,
+                unitCost: item.unitCost,
+                shares: []
+            });
+            addedItems.add(item.id);
+        }
+
+        // Add the Share to the receipt items
+        const parsedReceiptItemIndex = parsedReceipt.receiptItems.findIndex((receiptItem) => receiptItem.name === item.name);
+        parsedReceipt.receiptItems[parsedReceiptItemIndex].shares.push({
+            userName: share.userName,
+            share: share.share
+        });
+
+        // Add the User to the members
+        if (!addedUsers.has(user.userName)) {
+            parsedReceipt.members.push(user.userName as string);
+            addedUsers.add(user.userName);
+        }
+    }
+
+    return parsedReceipt;
 }
