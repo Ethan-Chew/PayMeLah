@@ -137,6 +137,7 @@ export async function getReceiptData(receiptId: string) {
 
     const addedItems = new Set();
     const addedUsers = new Set();
+    const addedShares = new Set();
 
     for (const entry of data) {
         const item = entry.receipt_items;
@@ -155,11 +156,15 @@ export async function getReceiptData(receiptId: string) {
         }
 
         // Add the Share to the receipt items
-        const parsedReceiptItemIndex = parsedReceipt.receiptItems.findIndex((receiptItem) => receiptItem.name === item.name);
-        parsedReceipt.receiptItems[parsedReceiptItemIndex].shares.push({
-            userName: share.userName,
-            share: share.share
-        });
+        const shareId = `${item.id}-${share.userName}`;
+        if (!addedShares.has(shareId)) {
+            const parsedReceiptItemIndex = parsedReceipt.receiptItems.findIndex((receiptItem) => receiptItem.name === item.name);
+            parsedReceipt.receiptItems[parsedReceiptItemIndex].shares.push({
+                userName: share.userName,
+                share: share.share
+            });
+            addedShares.add(shareId);
+        }
 
         // Add the User to the members
         if (!addedUsers.has(user.userName)) {

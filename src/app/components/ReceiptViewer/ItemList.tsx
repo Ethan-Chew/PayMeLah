@@ -13,8 +13,10 @@ export default function ItemList({ items, members }: { items: any[], members: st
                 setSelectedOption={setSelectedOption}
             />
 
-            <div className="mt-4 flex flex-row gap-2">
-                {items.map((item, index) => (
+            <div className="mt-4 flex flex-col">
+                {items.filter((item) => (
+                    item.shares.some((share: any) => share.userName === selectedOption) || selectedOption === "All Items"
+                )).map((item, index) => (
                     <Item key={index} item={item} />
                 ))}
             </div>
@@ -24,8 +26,16 @@ export default function ItemList({ items, members }: { items: any[], members: st
 
 export function Item({ item }: { item: any }) {
     return (
-        <div className="px-4 py-2 border border-dark-border rounded-lg">
-            { item.name }
+        <div className="p-4 border-b border-dark-border">
+            <p className="text-lg font-bold">{ item.name }{ item.quantity > 1 && ` (${item.quantity}x)` }</p>
+            <p className="mb-2">${ item.unitCost * item.quantity }{ item.quantity > 1 && ` ($${parseFloat(item.unitCost).toFixed(2)} each)` }</p>
+            <div className="inline-flex flex-row gap-2">
+                { item.shares.map((share: any, index: number) => (
+                    <div key={index} className="px-2 py-1 border border-dark-border rounded-lg">
+                        <p>{ share.userName } ({Number.isInteger(+share.share) ? `${parseInt(share.share)}` : (+share.share).toFixed(2)}x)</p>
+                    </div>
+                ))}
+            </div>
         </div>
     )
 }

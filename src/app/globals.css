@@ -1,21 +1,36 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
-@theme {
-  --color-background: #f8f9fa;
-  --color-secondary-background: #e9ecef;
-  --color-accent: #17a2b8;
+:root {
+  --color-background: #ffffff;
+  --color-secondary-background: #f8f9fa;
+  --color-accent: #12918f;
   --color-border: #ced4da;
-  --color-secondary: #495057;
+  --color-secondary: #343a40;
 
   /* Dark Theme */
   --color-dark-background: #121212;
-  --color-dark-secondary-background: #222222;
-  --color-dark-accent: #3dd5d1;
+  --color-dark-secondary-background: #1e1e1e;
+  --color-dark-accent: #2DC8C5;
   --color-dark-border: #444444;
   --color-dark-secondary: #d6d6d6;
-  --color-dark-container: #1e1e1e; 
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-background: var(--color-background);
+  --color-secondary-background: var(--color-secondary-background);
+  --color-accent: var(--color-accent);
+  --color-border: var(--color-border);
+  --color-secondary: var(--color-secondary);
+
+  /* Dark Theme */
+  --color-dark-background: var(--color-dark-background);
+  --color-dark-secondary-background: var(--color-dark-secondary-background);
+  --color-dark-accent: var(--color-dark-accent);
+  --color-dark-border: var(--color-dark-border);
+  --color-dark-secondary: var(--color-dark-secondary);
+  --color-dark-container: var(--color-dark-secondary-background);
 }
 
 /* Hide Stepper Arrows */
@@ -40,4 +55,17 @@ input[type=number] {
 
 &::-webkit-scrollbar-thumb:horizontal {
   display: none;
+}
+
+.grid-background {
+  width: 100vw;
+  background-image: 
+    linear-gradient(to right, var(--color-dark-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-dark-border) 1px, transparent 1px);
+  background-size: 10vw 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: sans-serif;
+  mask-image: linear-gradient(to top, transparent 0%, var(--color-dark-background) 100%);
 }

@@ -19,8 +19,8 @@ export default async function ReceiptView({
   }, 0);
 
   return (
-    <div className="h-screen w-screen bg-dark-background text-white flex flex-col items-center gap-5">
-      <div className="bg-dark-container mx-10 mt-10 p-5 rounded-lg md:w-[50vw]">
+    <div className="bg-dark-background text-white flex flex-col items-center gap-5 p-10">
+      <div className="bg-dark-container p-5 rounded-lg md:w-[50vw]">
         <div className="pb-4 mb-4 border-b border-dark-border">
           <h1 className="text-3xl font-bold mb-1">PayMeLah!</h1>
           <p className="text-dark-secondary">Split shared expenses with your friends, easily.</p>
@@ -36,7 +36,7 @@ export default async function ReceiptView({
               <p><span className="font-semibold">Service Charge: </span>${ receipt.serviceCharge }</p>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <p>Splitting With <span className="font-semibold">4 People</span></p>
+              <p>Splitting With <span className="font-semibold">{receipt.members.length} People</span></p>
               <div className="inline-flex flex-row gap-2">
                 {receipt.members.map((member, index) => (
                   <PersonTag key={index} name={member} />
