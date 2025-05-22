@@ -175,3 +175,32 @@ export async function getReceiptData(receiptId: string) {
 
     return parsedReceipt;
 }
+
+export async function determineGSTServiceChargeSplit(receipt: DisplayedReceipt) {
+    type MemberSplit = {
+        total: number;
+        serviceCharge: number;
+        gst: number;
+    };
+    const memberSplit: Record<string, MemberSplit> = {};
+    for (const member of receipt.members) {
+        const memberSpend = receipt.receiptItems.reduce((acc, item) => {
+            const itemShare = item.shares.find((share: any) => share.userName === member);
+            if (itemShare) {
+                const itemCost = parseFloat(item.unitCost) * parseInt(item.quantity);
+                return acc + (itemCost * itemShare.share);
+            }
+            return acc;
+        }, 0);
+
+        const serviceCharge = memberSpend * 0.1;
+        const gst = (memberSpend + serviceCharge) * 0.09;
+        memberSplit[member] = {
+            total: memberSpend + serviceCharge + gst,
+            serviceCharge: serviceCharge,
+            gst: gst
+        };
+    }
+
+    return memberSplit;
+}

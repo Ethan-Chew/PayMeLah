@@ -1,5 +1,6 @@
 import ItemList from "@/app/components/ReceiptViewer/ItemList";
-import { DisplayedReceipt, getReceiptData } from "@/utils/utils"
+import PersonItemList from "@/app/components/ReceiptViewer/PersonItemList";
+import { determineGSTServiceChargeSplit, DisplayedReceipt, getReceiptData } from "@/utils/utils"
 import { redirect } from "next/navigation";
 
 export default async function ReceiptView({
@@ -13,10 +14,11 @@ export default async function ReceiptView({
     redirect('/404');
   }
 
+  const memberGstServiceCharge = await determineGSTServiceChargeSplit(receipt);
   const totalCost = receipt.receiptItems.reduce((acc, item) => {
     const itemCost = parseFloat(item.unitCost) * parseInt(item.quantity);
     return acc + itemCost;
-  }, 0);
+  }, 0) + receipt.gst + receipt.serviceCharge;
 
   return (
     <div className="bg-dark-background text-white flex flex-col items-center gap-5 p-10">
@@ -50,6 +52,18 @@ export default async function ReceiptView({
       <div className="bg-dark-container p-5 rounded-lg md:w-[50vw]">
           <h2 className="text-2xl font-semibold mb-2">Receipt Items</h2>
           <ItemList items={receipt.receiptItems} members={receipt.members} />
+      </div>
+
+      <div className="bg-dark-container p-5 rounded-lg md:w-[50vw]">
+          <h2 className="text-2xl font-semibold mb-2">Personalised Split</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2">
+            {receipt.members.map((member, index) => (
+              <div key={index} className="mb-4">
+                
+              </div>
+            ))}
+          </div>
+          {/* <PersonItem items={receipt.receiptItems} memberGstServiceCharge={memberGstServiceCharge} /> */}
       </div>
     </div>
   )
