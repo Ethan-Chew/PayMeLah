@@ -8,8 +8,8 @@
   --color-secondary: #343a40;
 
   /* Dark Theme */
-  --color-dark-background: #121212;
-  --color-dark-secondary-background: #1e1e1e;
+  --color-dark-background: #212121;
+  --color-dark-secondary-background: #1C1C1C;
   --color-dark-accent: #2DC8C5;
   --color-dark-border: #444444;
   --color-dark-secondary: #d6d6d6;
@@ -58,7 +58,7 @@ input[type=number] {
 }
 
 .grid-background {
-  width: 100vw;
+  width: 100%;
   background-image: 
     linear-gradient(to right, var(--color-dark-border) 1px, transparent 1px),
     linear-gradient(to bottom, var(--color-dark-border) 1px, transparent 1px);
