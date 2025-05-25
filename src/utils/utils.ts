@@ -116,7 +116,27 @@ export interface DisplayedReceipt {
     gst: string;
     serviceCharge: string;
     receiptItems: any[],
-    members: string[]
+    members: string[],
+    date: string
+}
+
+function formatDate(date: Date) {
+    const day = date.getUTCDate();
+    const month = date.toLocaleString('default', { month: 'long', timeZone: 'UTC' });
+    const year = date.getUTCFullYear();
+
+    // Function to add ordinal suffix
+    function getOrdinal(n: number) {
+        if (n > 3 && n < 21) return n + "th";
+        switch (n % 10) {
+            case 1: return n + "st";
+            case 2: return n + "nd";
+            case 3: return n + "rd";
+            default: return n + "th";
+        }
+    }
+
+    return `${getOrdinal(day)} ${month} ${year}`;
 }
 
 export async function getReceiptData(receiptId: string) {
@@ -130,10 +150,11 @@ export async function getReceiptData(receiptId: string) {
     if (data.length === 0) {
         return null;
     }
-
+    
     const parsedReceipt: DisplayedReceipt = {
         name: data[0].receipts.name,
         gst: data[0].receipts.gst,
+        date: formatDate(data[0].receipts.createdAt),
         serviceCharge: data[0].receipts.serviceCharge,
         receiptItems: [],
         members: [],
@@ -190,9 +211,8 @@ export async function determineGSTServiceChargeSplit(receipt: DisplayedReceipt) 
     for (const member of receipt.members) {
         const memberSpend = receipt.receiptItems.reduce((acc, item) => {
             const itemShare = item.shares.find((share: any) => share.userName === member);
-            if (itemShare) {
-                const itemCost = parseFloat(item.unitCost) * parseInt(item.quantity);
-                return acc + (itemCost * itemShare.share);
+            if (itemShare) {;
+                return acc + (parseFloat(item.unitCost) * parseFloat(itemShare.share));
             }
             return acc;
         }, 0);

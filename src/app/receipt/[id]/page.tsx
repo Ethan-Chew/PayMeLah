@@ -18,19 +18,19 @@ export default async function ReceiptView({
   const totalCost = receipt.receiptItems.reduce((acc, item) => {
     const itemCost = parseFloat(item.unitCost) * parseInt(item.quantity);
     return acc + itemCost;
-  }, 0) + receipt.gst + receipt.serviceCharge;
+  }, 0) + parseFloat(receipt.gst) + parseFloat(receipt.serviceCharge);
 
   return (
-    <div className="bg-dark-background text-white flex flex-col items-center gap-5 p-10">
-      <div className="bg-dark-container p-5 rounded-lg md:w-[50vw]">
+    <div className="min-h-screen bg-dark-background text-white flex flex-col items-center gap-5 p-5 md:p-10">
+      <div className="w-full bg-dark-container p-5 rounded-lg md:min-w-[50vw]">
         <div className="pb-4 mb-4 border-b border-dark-border">
           <h1 className="text-3xl font-bold mb-1">PayMeLah!</h1>
           <p className="text-dark-secondary">Split shared expenses with your friends, easily.</p>
         </div>
 
         <div>
-          <h2 className="text-2xl font-semibold">This is a Receipt Name</h2>
-          <p className="text-sm text-dark-secondary mb-3">15th May 2025</p>
+          <h2 className="text-2xl font-semibold">{ receipt.name }</h2>
+          <p className="text-sm text-dark-secondary mb-3">{ receipt.date }</p>
           <div className="flex place-content-between">
             <div>
               <p><span className="font-semibold">Total: </span>${ totalCost }</p>
@@ -49,21 +49,24 @@ export default async function ReceiptView({
         </div>
       </div>
 
-      <div className="bg-dark-container p-5 rounded-lg md:w-[50vw]">
+      <div className="w-full flex-grow bg-dark-container p-5 md:p-10 rounded-lg md:min-w-[50vw]">
           <h2 className="text-2xl font-semibold mb-2">Receipt Items</h2>
           <ItemList items={receipt.receiptItems} members={receipt.members} />
       </div>
 
-      <div className="bg-dark-container p-5 rounded-lg md:w-[50vw]">
-          <h2 className="text-2xl font-semibold mb-2">Personalised Split</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2">
+      <div className="w-full bg-dark-container p-5 md:p-10 rounded-lg md:min-w-[50vw]">
+          <h2 className="text-2xl font-semibold">Personalised Split</h2>
+          <p className="mb-5 text-dark-secondary">Itemised Split of Receipt Items among people in the group</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {receipt.members.map((member, index) => (
-              <div key={index} className="mb-4">
-                
-              </div>
+              <PersonItemList 
+                key={index}
+                name={member}
+                items={receipt.receiptItems}
+                memberGstServiceCharge={memberGstServiceCharge}
+              />
             ))}
           </div>
-          {/* <PersonItem items={receipt.receiptItems} memberGstServiceCharge={memberGstServiceCharge} /> */}
       </div>
     </div>
   )
@@ -71,9 +74,9 @@ export default async function ReceiptView({
 
 function PersonTag({ name }: { name: string }) {
   return (
-    <div className="inline-flex flex-row items-center border border-dark-border rounded-full px-3 py-1 gap-2 text-sm">
-      <p className="text-white font-semibold h-6 w-6 flex items-center justify-center bg-dark-accent rounded-full">{ name[0].toUpperCase() }</p>
-      <p className="text-white font-semibold">{ name }</p>
-    </div>
+      <div className="inline-flex flex-row items-center border border-dark-border rounded-full px-3 py-1 gap-2 text-sm">
+          <p className="text-white font-semibold h-6 w-6 flex items-center justify-center bg-dark-accent rounded-full">{ name[0].toUpperCase() }</p>
+          <p className="text-white font-semibold">{ name }</p>
+      </div>
   )
 }
