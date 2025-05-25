@@ -44,7 +44,7 @@ export default function Home() {
             <p className="text-dark-secondary">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.</p>
           </div>
 
-          <div className="flex flex-row items-stretch justify-center gap-5 h-full">
+          <div className="flex flex-row justify-center gap-5 h-full place-content-between">
             <TermsAndPrivacy />
           </div>
         </div>

@@ -75,7 +75,7 @@ export default function ReceiptDetailModal({ formData, setFormData}: IReceiptDet
             </div>
 
 
-            <div className="w-full inline-flex items-center justify-start gap-3">
+            {/* <div className="w-full inline-flex items-center justify-start gap-3">
                 <input 
                     type="checkbox"
                     className="h-5 w-5"
@@ -86,7 +86,7 @@ export default function ReceiptDetailModal({ formData, setFormData}: IReceiptDet
                     <p className="text-lg font-semibold">Save this Group?</p>
                     <p className="text-dark-secondary text-sm">If you're logged in on the same device or into your account, you'll be able to reuse this group.</p>
                 </div>
-            </div>
+            </div> */}
         </form>
    )
 }

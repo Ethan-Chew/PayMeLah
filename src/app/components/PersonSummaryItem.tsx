@@ -1,7 +1,10 @@
-export default function PersonSummaryItem({ name, receiptItems }: { name: string, receiptItems: any[] }) {
+import { ReceiptItem } from "@/db/types";
+
+export default function PersonSummaryItem({ name, receiptItems }: { name: string, receiptItems: ReceiptItem[] }) {
     const totalAmount = receiptItems.reduce((accumulator, item) => {
-        const userShare = item.shares.find((share: any) => share.userName === name);
-        return accumulator + (item.unitCost * parseFloat(userShare.share));
+        const userShare = item.shares.find((share) => share.userName === name);
+        if (!userShare || !userShare.share) return accumulator;
+        return accumulator + (item.unitCost * userShare.share);
     }, 0)
 
     return (
@@ -16,11 +19,12 @@ export default function PersonSummaryItem({ name, receiptItems }: { name: string
 
             <div className="text-dark-secondary w-full">
                 { receiptItems.map((item, index) => {
-                    const userShare = item.shares.find((share: any) => share.userName === name);
+                    const userShare = item.shares.find((share) => share.userName === name);
+                    if (!userShare || !userShare.share) return null;
                     return (
                         <div key={index} className="inline-flex place-content-between py-2 w-full">
-                            <p>{ item.name } ({ parseFloat(userShare.share).toFixed(2) }x)</p>
-                            <p>${ (item.unitCost * parseFloat(userShare.share)).toFixed(2) }</p>
+                            <p>{ item.name } ({ userShare.share.toFixed(2) }x)</p>
+                            <p>${ (item.unitCost * userShare.share).toFixed(2) }</p>
                         </div>
                     )
                 }) }

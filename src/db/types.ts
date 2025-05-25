@@ -10,6 +10,12 @@ type ReceiptItem = {
     name: string,
     quantity: number,
     unitCost: number,
+    shares: ReceiptItemShare[]
+}
+
+type ReceiptItemShare = {
+    userName: string,
+    share: number
 }
 
 type ParsedReceipt = {
@@ -18,4 +24,4 @@ type ParsedReceipt = {
     serviceCharge: number,
 }
 
-export type { CreateReceiptModal, ReceiptItem, ParsedReceipt };
+export type { CreateReceiptModal, ReceiptItem, ReceiptItemShare, ParsedReceipt };

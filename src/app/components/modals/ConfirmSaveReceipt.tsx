@@ -11,12 +11,11 @@ import { saveReceiptToDB } from "@/utils/utils";
 
 interface IConfirmSaveReceiptProps {
     receiptFormData: CreateReceiptModal,
-    receiptItems: any[],
     receiptData: ParsedReceipt | null,
     hideModal: () => void,
 }
 
-export default function ConfirmSaveReceipt({receiptFormData, receiptItems, receiptData, hideModal }: IConfirmSaveReceiptProps) {
+export default function ConfirmSaveReceipt({receiptFormData, receiptData, hideModal }: IConfirmSaveReceiptProps) {
     const [ isLoading, setIsLoading ] = useState(true);
     const [ isConfetti, setIsConfetti ] = useState(false);
     const [ hasCopied, setHasCopied ] = useState(false);
@@ -25,7 +24,9 @@ export default function ConfirmSaveReceipt({receiptFormData, receiptItems, recei
 
     useEffect(() => {
         const saveToDB = async () => {
-            const receiptId = await saveReceiptToDB(receiptFormData, receiptItems, receiptData?.gst || 0, receiptData?.serviceCharge || 0);
+            if (!receiptData) return; 
+
+            const receiptId = await saveReceiptToDB(receiptFormData, receiptData);
             setSavedReceiptId(receiptId);
             setIsLoading(false);
             setTimeout(() => {

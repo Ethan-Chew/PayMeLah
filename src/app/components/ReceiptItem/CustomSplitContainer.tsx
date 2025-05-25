@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import Stepper from "../ui/Stepper";
 import { IReceiptItem } from "./IReceiptItem";
 
-export default function CustomSplitContainer({ item, people, addReceiptItemShare, clearItemShares }: IReceiptItem) {
+export default function CustomSplitContainer({ item, people, addItemShare, clearItemShares }: IReceiptItem) {
     const [ splitPeopleInfo, setSplitPeopleInfo ] = useState<{ name: string, amount: number }[]>(people.map((person) => ({ name: person, amount: 0 })));
     const [ status, setStatus ] = useState({
         isError: false,
@@ -43,7 +43,7 @@ export default function CustomSplitContainer({ item, people, addReceiptItemShare
             clearItemShares(item.name);
             for (const person of splitPeopleInfo) {
                 if (person.amount > 0) {
-                    addReceiptItemShare(item.name, person.name, person.amount);
+                    addItemShare(item.name, person.name, person.amount);
                 }
             }
         }

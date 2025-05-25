@@ -1,6 +1,6 @@
 "use server";
 import { groupTable, groupUsersTable, receiptItemSharesTable, receiptItemsTable, receiptsTable } from "@/db/schema";
-import { CreateReceiptModal, ParsedReceipt } from "@/db/types";
+import { CreateReceiptModal, ParsedReceipt, ReceiptItem } from "@/db/types";
 import { db } from "@/utils/db";
 import OpenAI from 'openai';
 
@@ -39,7 +39,8 @@ export async function parseReceiptData(fileUrl: string) {
                 parsedReceipt.items.push({
                     name: splittedLine[0].trim(),
                     quantity: parseInt(splittedLine[1]),
-                    unitCost: parseFloat(splittedLine[2]) / parseInt(splittedLine[1])
+                    unitCost: parseFloat(splittedLine[2]) / parseInt(splittedLine[1]),
+                    shares: []
                 });   
             }
         } else if (splittedLine[0].trim().toLowerCase() === "gst") {
@@ -52,7 +53,7 @@ export async function parseReceiptData(fileUrl: string) {
     return parsedReceipt;
 }
 
-export async function saveReceiptToDB(receiptFormData: CreateReceiptModal, receiptItems: any, gst: number, serviceCharge: number) {
+export async function saveReceiptToDB(receiptFormData: CreateReceiptModal, receiptData: ParsedReceipt) {
     let receiptId: string = "";
     await db.transaction(async (tx) => {
         // Create the Group
@@ -71,34 +72,37 @@ export async function saveReceiptToDB(receiptFormData: CreateReceiptModal, recei
         const receiptResult = await tx.insert(receiptsTable).values({
             name: receiptFormData.title,
             groupId: groupId[0].id,
-            gst: gst.toString(),
-            serviceCharge: serviceCharge.toString(),
+            gst: receiptData.gst.toString(),
+            serviceCharge: receiptData.serviceCharge.toString(),
         }).returning({ id: receiptsTable.id });
         receiptId = receiptResult[0].id;
 
         // Add the Receipt Items
         const savedReceiptItems = await tx.insert(receiptItemsTable).values(
-            receiptItems.map((item: any) => (
-            {
-                receiptId: receiptId,
-                quantity: item.quantity,
-                name: item.name,
-                unitCost: item.unitCost.toString(),
-            }
+            receiptData.items.map((item: ReceiptItem) => (
+                {
+                    receiptId: receiptId,
+                    quantity: item.quantity,
+                    name: item.name,
+                    unitCost: item.unitCost.toString(),
+                }
             ))
         ).returning({ id: receiptItemsTable.id, name: receiptItemsTable.name });
       
         // Create share entries for each item and each user
         for (const item of savedReceiptItems) {
-            const itemWithShare = receiptItems.find((itemWithShare: any) => item.name === itemWithShare.name);
-            for (const share of itemWithShare.shares) {
-                const user = insertedUsers.find((user) => user.userName === share.userName);
-                if (user) {
-                    await tx.insert(receiptItemSharesTable).values({
-                        itemId: item.id,
-                        userName: user.userName,
-                        share: share.share.toString()
-                    });
+            const itemWithShare = receiptData.items.find((itemWithShare: any) => item.name === itemWithShare.name);
+
+            if (itemWithShare) {
+                for (const share of itemWithShare.shares) {
+                    const user = insertedUsers.find((user) => user.userName === share.userName);
+                    if (user) {
+                        await tx.insert(receiptItemSharesTable).values({
+                            itemId: item.id,
+                            userName: user.userName,
+                            share: share.share.toString()
+                        });
+                    }
                 }
             }
         }

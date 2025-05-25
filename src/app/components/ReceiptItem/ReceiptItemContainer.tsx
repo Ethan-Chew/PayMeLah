@@ -5,33 +5,32 @@ import { AnimatePresence, motion } from "motion/react";
 import CustomSplitContainer from "./CustomSplitContainer";
 import { IReceiptItem } from "./IReceiptItem";
 
-export default function ReceiptItemContainer({ item, people, addReceiptItemShare, clearItemShares }: IReceiptItem) {
+export default function ReceiptItemContainer({ item, index, people, addItemShare, clearItemShares }: IReceiptItem & { index: number }) {
     const [ selectedPerson, setSelectedPerson ] = useState<string>("select");
     const [ isModalOpen, setIsModalOpen ] = useState<boolean>(false);
 
     useEffect(() => {
         if (selectedPerson === "select") return;
-        clearItemShares!(item.name);
 
         // Handle Split Equally
         if (selectedPerson === "split") {
             const share = item.quantity / people.length;
             for (const person of people) {
-                addReceiptItemShare(item.name, person, share);
+                addItemShare(item.name, person, share);
             }
             return;
         }
 
         // Handle Individual Split
         if (selectedPerson !== "custom") {
-            addReceiptItemShare(item.name, selectedPerson, item.quantity);
+            addItemShare(item.name, selectedPerson, item.quantity);
             return;
         }
 
     }, [selectedPerson]);
 
     return (
-        <div className="py-5 border-b border-dark-border">
+        <div className={`py-5 ${index === 0 ? "border-y" : "border-b"} border-dark-border`}>
             <div className="flex flex-row place-content-between items-center">
                 <div>
                     <p className="text-xl font-semibold">{ item.name }</p>
@@ -72,7 +71,7 @@ export default function ReceiptItemContainer({ item, people, addReceiptItemShare
                     <CustomSplitContainer
                         item={item}
                         people={people}
-                        addReceiptItemShare={addReceiptItemShare}
+                        addItemShare={addItemShare}
                         clearItemShares={clearItemShares}
                     />
                 ) }

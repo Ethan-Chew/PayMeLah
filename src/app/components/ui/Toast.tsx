@@ -16,15 +16,16 @@ export default function Toast({ title, description, hideError }: IToast) {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setTimer((prev) => (prev > 0 ? prev - 1 : 0));
-
-            if (timer === 0) {
-                hideError();
-            }
+            setTimer((prev) => {
+                if (prev === 1) {
+                    hideError();
+                }
+                return prev > 0 ? prev - 1 : 0;
+            });
         }, 1000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [hideError]);
 
     return (
         <div className="fixed bottom-5 right-5 bg-dark-background shadow-lg rounded-lg w-80">
