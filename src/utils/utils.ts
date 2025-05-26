@@ -13,9 +13,33 @@ export async function parseReceiptData(fileUrl: string) {
         return null;
     }
 
+    const systemMessage = `Extract items as: ItemName|Quantity|Price per line. End with: gst|amount, serviceCharge|amount. Use exact item names, remove item codes, ignore modifiers. Missing qty=1, free=0, no GST=gst|0, no service=serviceCharge|0. No extra text.
+Example:
+Veg Sandwich|1|5.75
+Latte|2|4.25
+Blueberry Muffin|0|0
+gst|0
+serviceCharge|0.99`
+
     // Use the OpenAI API to Analyse the Receipt
-    // const apiResponse = await client.chat.completions.create({
-    //     model: "gpt-4.1-nano"
+    const client = new OpenAI({
+        apiKey: process.env.OPENAI_KEY,
+    })
+    // const apiResponse = await client.responses.create({
+    //     model: "gpt-4.1-nano",
+    //     input: [
+    //         {
+    //             role: "user",
+    //             content: [
+    //                 { type: "input_text", text: systemMessage },
+    //                 {
+    //                     type: "input_image",
+    //                     image_url: `${fileUrl}`,
+    //                     detail: "auto"
+    //                 }
+    //             ]
+    //         }
+    //     ]
     // });
     // MOCK: API Response
     const apiResponse = `
@@ -29,8 +53,8 @@ export async function parseReceiptData(fileUrl: string) {
     gst|0  
     serviceCharge|0.99
     `
-
     const parsedReceipt: ParsedReceipt = { items: [], gst: -1, serviceCharge: -1 };
+    // for (const line of apiResponse.output_text.trim().split(/\r?\n/)) {
     for (const line of apiResponse.trim().split(/\r?\n/)) {
         const splittedLine = line.split("|");
 
@@ -217,8 +241,9 @@ export async function determineGSTServiceChargeSplit(receipt: DisplayedReceipt) 
             return acc;
         }, 0);
 
-        const serviceCharge = memberSpend * 0.1;
-        const gst = (memberSpend + serviceCharge) * 0.09;
+        const serviceCharge = parseFloat(receipt.serviceCharge) === 0 ? 0 : (memberSpend * 0.1);
+        const gst = parseFloat(receipt.gst) === 0 ? 0 : ((memberSpend + serviceCharge) * 0.09);
+
         memberSplit[member] = {
             total: memberSpend + serviceCharge + gst,
             serviceCharge: serviceCharge,

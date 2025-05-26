@@ -206,30 +206,32 @@ export default function SplitCosts() {
                     </div>
 
                     {/* Receipt Items */}
-                    <div className="relative">
-                        { receiptData?.items.map((item, index) => (
-                            <ReceiptItemContainer
-                                key={index}
-                                index={index}
-                                item={item}
-                                people={[...receiptFormData.others, receiptFormData.payee].filter((person) => person !== "")}
-                                addItemShare={addItemShare}
-                                clearItemShares={clearItemShares}
-                            />
-                        )) }
-                        
-                        { [...receiptFormData.others, receiptFormData.payee].filter((person) => person !== "").length < 2 && (
-                            <div className="absolute top-0 left-0 bg-dark-background/50 backdrop-blur-sm rounded-lg border-dark-border border-2 flex flex-col items-center justify-center w-full h-full">
-                                <div className="md:max-w-1/3 text-center p-5">
-                                    <div className="inline-flex flex-row gap-3 text-3xl mb-2">
-                                        <FaHand />
-                                        <p className="font-bold">Wait!</p>
+                    { receiptData && (
+                        <div className="relative">
+                            { receiptData.items.map((item, index) => (
+                                <ReceiptItemContainer
+                                    key={index}
+                                    index={index}
+                                    item={item}
+                                    people={[...receiptFormData.others, receiptFormData.payee].filter((person) => person !== "")}
+                                    addItemShare={addItemShare}
+                                    clearItemShares={clearItemShares}
+                                />
+                            )) }
+                            
+                            { [...receiptFormData.others, receiptFormData.payee].filter((person) => person !== "").length < 2 && (
+                                <div className="absolute top-0 left-0 bg-dark-background/50 backdrop-blur-sm rounded-lg border-dark-border border-2 flex flex-col items-center justify-center w-full h-full">
+                                    <div className="md:max-w-1/3 text-center p-5">
+                                        <div className="inline-flex flex-row gap-3 text-3xl mb-2">
+                                            <FaHand />
+                                            <p className="font-bold">Wait!</p>
+                                        </div>
+                                        <p className="text-dark-secondary">Before proceeding, please ensure that at least two people have been added to the receipt.</p>
                                     </div>
-                                    <p className="text-dark-secondary">Before proceeding, please ensure that at least two people have been added to the receipt.</p>
                                 </div>
-                            </div>
-                        ) }
-                    </div>
+                            ) }
+                        </div>
+                    ) }
                 </div>
 
                 {/* Separator */}
