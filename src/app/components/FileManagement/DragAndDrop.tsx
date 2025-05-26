@@ -6,10 +6,9 @@ import { FaXmark } from "react-icons/fa6";
 
 interface IDragAndDrop {
     setImageUrl: (imageUrl: string | null) => void;
-    imageUrl: string | null;
 }
 
-export default function DragAndDrop({ setImageUrl, imageUrl }: IDragAndDrop) {
+export default function DragAndDrop({ setImageUrl }: IDragAndDrop) {
     const [ isDragging, setIsDragging ] = useState(false);
     const [ uploadedFile, setUploadedFile ] = useState<File | null>(null);
     const [ error, setError ] = useState({
@@ -66,7 +65,7 @@ export default function DragAndDrop({ setImageUrl, imageUrl }: IDragAndDrop) {
         <>
             <div
                 className={`
-                    w-full flex flex-col gap-2 items-center justify-center text-white border-2 border-lg border-dashed rounded-lg border-neutral-700 hover:border-neutral-500 p-10 px-20 duration-150
+                    w-full flex flex-col gap-2 items-center justify-center text-white border-2 border-lg border-dashed rounded-lg border-neutral-700 hover:border-neutral-500 p-5 md:p-10 px-10 md:px-20 duration-150
                     ${isDragging ? "bg-neutral-800" : ""}
                 `}
                 onDrop={handleDrop}

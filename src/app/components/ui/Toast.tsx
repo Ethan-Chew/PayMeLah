@@ -12,7 +12,7 @@ interface IToast {
 
 export default function Toast({ title, description, hideError }: IToast) {
     const maxTime = 5;
-    const [timer, setTimer] = useState<number>(maxTime);
+    const [, setTimer] = useState<number>(maxTime);
 
     useEffect(() => {
         const interval = setInterval(() => {

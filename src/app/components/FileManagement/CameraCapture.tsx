@@ -1,6 +1,6 @@
 "use client";
 import { isMobilePhone } from "@/utils/isMobilePhone";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TiCameraOutline } from "react-icons/ti";
 
 interface ICameraCapture {
@@ -14,7 +14,7 @@ export default function CameraCapture({ setImageUrl, imageUrl }: ICameraCapture)
 
     const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
 
-    const startWebcam = async () => {
+    const startWebcam = useCallback(async () => {
         try {
             const constraints = isMobilePhone()
                 ? { video: { facingMode: { ideal: "environment" } } }
@@ -27,14 +27,14 @@ export default function CameraCapture({ setImageUrl, imageUrl }: ICameraCapture)
         } catch (error) {
             console.error("Error accessing webcam", error);
         }
-    };
+    }, []);
 
-    const stopWebcam = () => {
+    const stopWebcam = useCallback(() => {
         if (mediaStream) {
             mediaStream.getTracks().forEach((track) => track.stop());
             setMediaStream(null);
         }
-    };
+    }, [mediaStream]);
 
     const captureImage = () => {
         const video = videoRef.current;
@@ -64,7 +64,7 @@ export default function CameraCapture({ setImageUrl, imageUrl }: ICameraCapture)
         startWebcam();
 
         return () => stopWebcam();
-    }, []);
+    }, [startWebcam, stopWebcam]);
     
     return (
         <div className="flex flex-col md:flex-row w-full gap-5">

@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAppData } from "../providers/AppDataProvider";
 import { useRouter } from "next/navigation";
 import { CreateReceiptModal, ParsedReceipt, ReceiptItem, ReceiptItemShare } from "@/db/types";
@@ -57,10 +57,10 @@ export default function SplitCosts() {
         }
 
         processReceipt();
-    }, []);
+    }, [imageUrl]);
 
     // Add a new Share to the Receipt Item
-    const addItemShare = (itemName: string, userName: string, userShare: number) => {
+    const addItemShare = useCallback((itemName: string, userName: string, userShare: number) => {
         setReceiptData((previous: ParsedReceipt | null) => {
             if (previous === null) return null;
 
@@ -90,10 +90,10 @@ export default function SplitCosts() {
                 items: newItems
             };
         });
-    }
+    }, []);
 
     // Remove all Shares from the Receipt Item
-    const clearItemShares = (itemName: string) => {
+    const clearItemShares = useCallback((itemName: string) => {
         setReceiptData((previous: ParsedReceipt | null) => {
             if (previous === null) return null;
 
@@ -120,7 +120,7 @@ export default function SplitCosts() {
                 items: newItems
             };
         })
-    }
+    }, []);
 
     // Check if the Receipt can be created
     const handleCreateReceipt = () => {
@@ -274,7 +274,7 @@ export default function SplitCosts() {
                         className="bg-dark-accent hover:bg-accent py-2 px-4 rounded-lg duration-150 cursor-pointer"
                         onClick={handleCreateReceipt}
                     >
-                        I'm Done!
+                        I&apos;m Done!
                     </button>
                 </div>
             </div>

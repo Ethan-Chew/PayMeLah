@@ -47,7 +47,7 @@ export default function CustomSplitContainer({ item, people, addItemShare, clear
                 }
             }
         }
-    }, [splitPeopleInfo]);
+    }, [splitPeopleInfo, item.quantity, item.name, addItemShare, clearItemShares]);
 
     return (
         <motion.div

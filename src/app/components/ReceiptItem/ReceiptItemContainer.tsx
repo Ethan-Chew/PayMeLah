@@ -27,7 +27,7 @@ export default function ReceiptItemContainer({ item, index, people, addItemShare
             return;
         }
 
-    }, [selectedPerson]);
+    }, [selectedPerson, item.name, item.quantity, people.length, addItemShare]);
 
     return (
         <div className={`py-5 ${index === 0 ? "border-y" : "border-b"} border-dark-border`}>

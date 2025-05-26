@@ -1,8 +1,6 @@
 "use client"
 import NameInput from "../ui/NameInput";
-import { FaArrowRight } from "react-icons/fa6";
 import { CreateReceiptModal } from "@/db/types";
-import { FormEvent } from "react";
 
 interface IReceiptDetailModal {
     formData: CreateReceiptModal,
@@ -35,7 +33,7 @@ export default function ReceiptDetailModal({ formData, setFormData}: IReceiptDet
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         required
                     />
-                    <p className="text-dark-secondary text-sm mt-1">The Restaurant/Store's Name</p>
+                    <p className="text-dark-secondary text-sm mt-1">The Restaurant/Store&apos;s Name</p>
                 </div>
 
                 <div className="flex-1">

@@ -43,7 +43,6 @@ export default function ReceiptScanning() {
                 { selectedTab === "Scan" ? (
                     <DragAndDrop
                         setImageUrl={setImageUrl}
-                        imageUrl={imageUrl}
                     />
                 ) : (
                     <CameraCapture

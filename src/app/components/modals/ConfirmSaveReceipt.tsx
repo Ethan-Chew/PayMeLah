@@ -36,7 +36,7 @@ export default function ConfirmSaveReceipt({receiptFormData, receiptData, hideMo
         if (savedReceiptId === null) {
             saveToDB();
         }
-    }, []);
+    }, [receiptFormData, receiptData, savedReceiptId, setSavedReceiptId]);
 
     const copyText = () => {
         if (savedReceiptId === null) return;
@@ -69,7 +69,7 @@ export default function ConfirmSaveReceipt({receiptFormData, receiptData, hideMo
                     ) : (
                         <div className="inline-flex flex-row gap-5 items-center text-white">
                             <Loader />
-                            <p>Hang On! We're saving your receipt.</p>
+                            <p>Hang On! We&apos;re saving your receipt.</p>
                         </div>
                     ) }
                     { hasCopied && (
