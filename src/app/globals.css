@@ -58,6 +58,7 @@ input[type=number] {
 }
 
 .grid-background {
+  z-index: 0;
   width: 100%;
   background-image: 
     linear-gradient(to right, var(--color-dark-border) 1px, transparent 1px),

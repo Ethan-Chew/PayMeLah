@@ -31,7 +31,7 @@ export default function ReceiptItemContainer({ item, index, people, addItemShare
 
     return (
         <div className={`py-5 ${index === 0 ? "border-y" : "border-b"} border-dark-border`}>
-            <div className="flex flex-row place-content-between items-center">
+            <div className="flex flex-col gap-3 md:flex-row md:place-content-between md:items-center">
                 <div>
                     <p className="text-xl font-semibold">{ item.name }</p>
                     <p className="text-dark-secondary">{ item.quantity } item{ item.quantity === 1 ? "" : "s" } @ ${item.unitCost.toFixed(2)}</p>

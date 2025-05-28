@@ -31,15 +31,15 @@ export default async function ReceiptView({
         <div>
           <h2 className="text-2xl font-semibold">{ receipt.name }</h2>
           <p className="text-sm text-dark-secondary mb-3">{ receipt.date }</p>
-          <div className="flex place-content-between">
+          <div className="flex flex-col md:flex-row gap-3 place-content-between">
             <div>
               <p><span className="font-semibold">Total: </span>${ totalCost }</p>
               <p><span className="font-semibold">GST: </span>${ receipt.gst }</p>
               <p><span className="font-semibold">Service Charge: </span>${ receipt.serviceCharge }</p>
             </div>
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-col md:items-end gap-2">
               <p>Splitting With <span className="font-semibold">{receipt.members.length} People</span></p>
-              <div className="inline-flex flex-row gap-2">
+              <div className="inline-flex flex-row flex-wrap gap-2">
                 {receipt.members.map((member, index) => (
                   <PersonTag key={index} name={member} />
                 ))}

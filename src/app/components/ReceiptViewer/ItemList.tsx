@@ -29,7 +29,7 @@ export function Item({ item }: { item: any }) {
         <div className="p-4 border-b border-dark-border">
             <p className="text-lg font-bold">{ item.name }{ item.quantity > 1 && ` (${item.quantity}x)` }</p>
             <p className="mb-2">${ item.unitCost * item.quantity }{ item.quantity > 1 && ` ($${parseFloat(item.unitCost).toFixed(2)} each)` }</p>
-            <div className="inline-flex flex-row gap-2">
+            <div className="inline-flex flex-row flex-wrap gap-2">
                 { item.shares.map((share: any, index: number) => (
                     <div key={index} className="px-2 py-1 border border-dark-border rounded-lg">
                         <p>{ share.userName } ({Number.isInteger(+share.share) ? `${parseInt(share.share)}` : (+share.share).toFixed(2)}x)</p>

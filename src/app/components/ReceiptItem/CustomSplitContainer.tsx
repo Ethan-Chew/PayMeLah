@@ -59,7 +59,7 @@ export default function CustomSplitContainer({ item, people, addItemShare, clear
             <p className="text-lg font-semibold text-dark-accent mb-3">Assign by Person</p>
 
             { splitPeopleInfo.map((person, index) => (
-                <div key={index} className="flex flex-row py-2 place-content-between">
+                <div key={index} className="flex flex-col gap-1 md:flex-row py-2 place-content-between">
                     <div className="inline-flex flex-row gap-3">
                         <p className="h-8 w-8 bg-dark-accent rounded-full flex items-center justify-center font-semibold">{ person.name[0].toUpperCase() }</p>
                         <p className="text-lg font-semibold">{ person.name }</p>

@@ -14,7 +14,7 @@ export default function ReceiptScanning() {
     return (
         <div className="bg-dark-background min-h-screen flex flex-row">
             <SideBar />
-            <div className="ml-0 sm:ml-[25%] lg:ml-[20%] flex-1 flex flex-col gap-5 p-10 box-border">
+            <div className="ml-0 sm:ml-[25%] lg:ml-[20%] flex-1 flex flex-col gap-5 p-5 sm:p-10 box-border">
                 <div className="text-white">
                     <h1 className="font-semibold text-3xl mb-1">Capture your Receipt</h1>
                     <p className="text-dark-secondary">Taking a Clear Photo for us to Analyse</p>

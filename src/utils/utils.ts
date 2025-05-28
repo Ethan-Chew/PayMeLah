@@ -2,7 +2,7 @@
 import { groupTable, groupUsersTable, receiptItemSharesTable, receiptItemsTable, receiptsTable } from "@/db/schema";
 import { CreateReceiptModal, ParsedReceipt, ReceiptItem } from "@/db/types";
 import { db } from "@/utils/db";
-// import OpenAI from 'openai';
+import OpenAI from 'openai';
 
 import dotenv from 'dotenv';
 import { eq } from "drizzle-orm";
@@ -13,49 +13,57 @@ export async function parseReceiptData(fileUrl: string) {
         return null;
     }
 
-//     const systemMessage = `Extract items as: ItemName|Quantity|Price per line. End with: gst|amount, serviceCharge|amount. Use exact item names, remove item codes, ignore modifiers. Missing qty=1, free=0, no GST=gst|0, no service=serviceCharge|0. No extra text.
-// Example:
-// Veg Sandwich|1|5.75
-// Latte|2|4.25
-// Blueberry Muffin|0|0
-// gst|0
-// serviceCharge|0.99`
+    const systemMessage = `Extract items as: ItemName|Quantity|Price per line. End with: gst|amount, serviceCharge|amount. Use exact item names, remove item codes, ignore modifiers. Missing qty=1, free=0, no GST=gst|0, no service=serviceCharge|0. No extra text.
+Example:
+Veg Sandwich|1|5.75
+Latte|2|4.25
+Blueberry Muffin|0|0
+gst|0
+serviceCharge|0.99`
+
+    const isDev = process.env.DEPLOYMENT_TYPE === "development";
 
     // Use the OpenAI API to Analyse the Receipt
-    // const client = new OpenAI({
-    //     apiKey: process.env.OPENAI_KEY,
-    // })
-    // const apiResponse = await client.responses.create({
-    //     model: "gpt-4.1-nano",
-    //     input: [
-    //         {
-    //             role: "user",
-    //             content: [
-    //                 { type: "input_text", text: systemMessage },
-    //                 {
-    //                     type: "input_image",
-    //                     image_url: `${fileUrl}`,
-    //                     detail: "auto"
-    //                 }
-    //             ]
-    //         }
-    //     ]
-    // });
-    // MOCK: API Response
-    const apiResponse = `
-    Veg Sandwich|1|5.75  
-    Latte|2|4.25  
-    Blueberry Muffin|0|0  
-    Green Tea|1|3.15  
-    Pasta Alfredo|1|12.99  
-    Sparkling Water|1|2.5  
-    Fruit Bowl|2|0  
-    gst|0  
-    serviceCharge|0.99
-    `
+    const client = new OpenAI({
+        apiKey: process.env.OPENAI_KEY,
+    })
+
+    let textualResponse: string = "";
+    if (isDev) {
+        // MOCK: API Response for Development
+        textualResponse = `
+        Veg Sandwich|1|5.75  
+        Latte|2|4.25  
+        Blueberry Muffin|0|0  
+        Green Tea|1|3.15  
+        Pasta Alfredo|1|12.99  
+        Sparkling Water|1|2.5  
+        Fruit Bowl|2|0  
+        gst|0  
+        serviceCharge|0.99
+        `
+    } else {
+        const apiResponse = await client.responses.create({
+            model: "gpt-4.1-nano",
+            input: [
+                {
+                    role: "user",
+                    content: [
+                        { type: "input_text", text: systemMessage },
+                        {
+                            type: "input_image",
+                            image_url: `${fileUrl}`,
+                            detail: "auto"
+                        }
+                    ]
+                }
+            ]
+        });
+        textualResponse = apiResponse.output_text
+    }
+
     const parsedReceipt: ParsedReceipt = { items: [], gst: -1, serviceCharge: -1 };
-    // for (const line of apiResponse.output_text.trim().split(/\r?\n/)) {
-    for (const line of apiResponse.trim().split(/\r?\n/)) {
+    for (const line of textualResponse.trim().split(/\r?\n/)) {
         const splittedLine = line.split("|");
 
         if (splittedLine.length === 3) { // Receipt Item
