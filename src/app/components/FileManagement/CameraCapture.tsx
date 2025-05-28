@@ -51,6 +51,7 @@ export default function CameraCapture({ setImageUrl, imageUrl }: ICameraCapture)
                 ctx.drawImage(video, 0, 0, width, height);
                 const imageData = canvas.toDataURL("image/png");
                 setImageUrl(imageData);
+                stopWebcam();
             }
         }
     };
@@ -63,8 +64,12 @@ export default function CameraCapture({ setImageUrl, imageUrl }: ICameraCapture)
     useEffect(() => {
         startWebcam();
 
-        return () => stopWebcam();
-    }, [startWebcam, stopWebcam]);
+        return () => {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach((track) => track.stop());
+            }
+        };
+    }, []);
     
     return (
         <div className="flex flex-col md:flex-row w-full gap-5">

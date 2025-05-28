@@ -12,7 +12,7 @@ export default function ReceiptScanning() {
     const [ selectedTab, setSelectedTab ] = useState<"Scan" | "Upload">("Scan");
 
     return (
-        <div className="bg-dark-background min-h-screen w-screen flex flex-row">
+        <div className="bg-dark-background min-h-screen flex flex-row">
             <SideBar />
             <div className="ml-0 sm:ml-[25%] lg:ml-[20%] flex-1 flex flex-col gap-5 p-10 box-border">
                 <div className="text-white">
