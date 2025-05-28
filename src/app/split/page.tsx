@@ -163,7 +163,7 @@ export default function SplitCosts() {
     }
 
     return (
-        <div className="bg-dark-background min-h-screen flex flex-row">
+        <div className="bg-dark-background min-h-screen flex flex-col sm:flex-row">
             <SideBar currentStep={PayMeLahSteps.Split} />
             <div className="ml-0 sm:ml-[25%] lg:ml-[20%] flex-1 flex flex-col py-10 p-5 gap-5 border-box max-w-full">
                 <header>
