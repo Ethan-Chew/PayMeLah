@@ -13,7 +13,7 @@ export async function parseReceiptData(fileUrl: string) {
         return null;
     }
 
-    const systemMessage = `Extract items as: ItemName|Quantity|Price per line. End with: gst|amount, serviceCharge|amount. Use exact item names, remove item codes, ignore modifiers. Missing qty=1, free=0, no GST=gst|0, no service=serviceCharge|0. No extra text.
+    const systemMessage = `Extract items as: ItemName|Quantity|Price per line. End with: gst|amount, serviceCharge|amount. Use exact item names, remove item codes, ignore modifiers, handle duplicate items. Missing qty=1, free=0, no GST=gst|0, no service=serviceCharge|0. No extra text.
 Example:
 Veg Sandwich|1|5.75
 Latte|2|4.25
