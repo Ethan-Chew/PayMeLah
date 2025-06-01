@@ -3,14 +3,16 @@ import { useCallback, useEffect, useState } from "react";
 import { useAppData } from "../providers/AppDataProvider";
 import { useRouter } from "next/navigation";
 import { CreateReceiptModal, ParsedReceipt, ReceiptItem, ReceiptItemShare } from "@/db/types";
+import { AnimatePresence } from "motion/react";
+
 import ReceiptDetailModal from "../components/modals/ReceiptDetailModal";
 import SideBar from "../components/SideBar";
 import { PayMeLahSteps } from "../components/ProgressBar/data";
-
 import Toast from "../components/ui/Toast";
 import ReceiptItemContainer from "../components/ReceiptItem/ReceiptItemContainer";
 import PersonSummaryItem from "../components/PersonSummaryItem";
 import ConfirmSaveReceipt from "../components/modals/ConfirmSaveReceipt";
+import UpdateReceiptItems from "../components/modals/UpdateReceiptItems";
 import { parseReceiptData } from "@/utils/utils";
 
 // React Icons
@@ -36,6 +38,7 @@ export default function SplitCosts() {
         saveGroup: false
     });
     const [ confirmSharePopup, setConfirmSharePopup ] = useState(false);
+    const [ showUpdateItemsModal, setShowUpdateItemsModal ] = useState(false);
 
     // Process Receipt Data based on Image on Init
     useEffect(() => {
@@ -182,6 +185,7 @@ export default function SplitCosts() {
                     <ReceiptDetailModal
                         formData={receiptFormData}
                         setFormData={setReceiptFormData}
+                        setShowUpdateItemsModal={() => setShowUpdateItemsModal(!showUpdateItemsModal)}
                     />
                 </div>
 
@@ -271,7 +275,7 @@ export default function SplitCosts() {
                         <p className="text-dark-secondary">You will not be able to edit it after submission (for now...).</p>
                     </div>
                     <button
-                        className="bg-dark-accent hover:bg-accent py-2 px-4 rounded-lg duration-150 cursor-pointer"
+                        className="text-dark-background bg-dark-accent hover:bg-accent py-2 px-4 rounded-lg duration-150 cursor-pointer"
                         onClick={handleCreateReceipt}
                     >
                         I&apos;m Done!
@@ -294,6 +298,15 @@ export default function SplitCosts() {
                     hideModal={() => setConfirmSharePopup(false)}
                 />
             ) }
+
+            <AnimatePresence>
+                { showUpdateItemsModal && (
+                    <UpdateReceiptItems
+                        receiptItems={receiptData ? receiptData.items : []}
+                        hideModal={() => setShowUpdateItemsModal(false)}
+                    />
+                ) }
+            </AnimatePresence>
         </div>
     )
 }

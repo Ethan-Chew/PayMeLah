@@ -4,10 +4,11 @@ import { CreateReceiptModal } from "@/db/types";
 
 interface IReceiptDetailModal {
     formData: CreateReceiptModal,
-    setFormData: (val: CreateReceiptModal) => void
+    setFormData: (val: CreateReceiptModal) => void,
+    setShowUpdateItemsModal: () => void,
 }
 
-export default function ReceiptDetailModal({ formData, setFormData}: IReceiptDetailModal) {
+export default function ReceiptDetailModal({ formData, setFormData, setShowUpdateItemsModal }: IReceiptDetailModal) {
     const addName = (name: string) => {
         if (name && !formData.others.includes(name)) {
             setFormData({ ...formData, others: [...formData.others, name] });
@@ -72,6 +73,21 @@ export default function ReceiptDetailModal({ formData, setFormData}: IReceiptDet
                 </div>
             </div>
 
+            <div className="w-full flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+                <div className="flex-1">
+                    <p className="text-lg font-semibold">Items don't look right?</p>
+                    <p className="text-dark-secondary text-sm">PayMeLah! uses AI Technologies to retrieve receipt items, hence, there might be some discrepancies. You may update receipt items if needed.</p>
+                </div>
+                <button
+                    className="p-3 bg-dark-accent hover:bg-accent text-dark-background rounded-md font-semibold"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        setShowUpdateItemsModal();
+                    }}
+                >
+                    Update Items
+                </button>
+            </div>
 
             {/* <div className="w-full inline-flex items-center justify-start gap-3">
                 <input 
