@@ -2,11 +2,12 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppData } from "../providers/AppDataProvider";
+import { AnimatePresence } from "framer-motion";
 
 import GlassBackground from "@/app/components/ui/GlassBackground"
 import GlassSidebar from "@/app/components/GlassSidebar";
 import GlassContainer from "@/app/components/ui/GlassContainer";
-import { ParsedReceipt, ReceiptDetails, ReceiptItem } from "@/db/types";
+import { ParsedReceipt, ReceiptDetails, ReceiptItem, ReceiptItemShare } from "@/db/types";
 import { parseReceiptData } from "@/utils/utils";
 
 // React Icons
@@ -16,6 +17,8 @@ import { BsFillPeopleFill, BsFillBarChartFill } from "react-icons/bs";
 
 import ReceiptDetailsModal from "@/app/components/modals/ReceiptDetails";
 import ReceiptItemContainer from "@/app/components/ReceiptItem/ReceiptItemContainer";
+import PersonSummaryItem from "../components/PersonSummaryItem";
+import Toast from "../components/ui/Toast";
 
 export default function SplitCosts() {
     const router = useRouter();
@@ -23,7 +26,7 @@ export default function SplitCosts() {
     
     const [ receiptDetails, setReceiptDetails ] = useState<ReceiptDetails>({
         title: "",
-        date: "",
+        date: new Date().toLocaleDateString('en-SG').replace(/\//g, "-"),
         members: []
     });
     const [ receiptItemDetails, setReceiptItemDetails ] = useState<ParsedReceipt | null>(null);
@@ -36,6 +39,17 @@ export default function SplitCosts() {
         
         return itemsTotal + receiptItemDetails.gst + receiptItemDetails.serviceCharge;
     }, [receiptItemDetails]);
+    const availableSubmit = useMemo<boolean>(() => {
+        if (!receiptItemDetails || receiptDetails.title === "" || receiptDetails.members.length < 2) {
+            return false;
+        }
+
+        // Check if all items are fully assigned
+        return receiptItemDetails.items.every(item => {
+            const totalAssigned = item.shares?.reduce((total, share) => total + share.share, 0) || 0;
+            return Math.abs(totalAssigned - item.quantity) <= 0.001;
+        });
+    }, [receiptItemDetails, receiptDetails]);
     const [error, setError] = useState({
         isDisplayed: false,
         title: "",
@@ -148,65 +162,66 @@ export default function SplitCosts() {
                     </GlassContainer>
 
                     {/* Split Receipt Items */}
-                    <GlassContainer>
-                        <div className="text-2xl inline-flex flex-row items-center gap-3">
-                            <BsFillPeopleFill />
-                            <h2 className="font-semibold">Split with Friends</h2>
-                        </div>   
+                    <GlassContainer styles="relative">
+                        <div>
+                            <div className="text-2xl inline-flex flex-row items-center gap-3 mb-2">
+                                <BsFillPeopleFill />
+                                <h2 className="font-semibold">Split with Friends</h2>
+                            </div>   
 
-                        {/* Receipt Details Display */}
-                        <div className="flex flex-row gap-10 mb-4">
-                            <div>
-                                <p className="text-dark-secondary">GST</p>
-                                <p className="text-2xl font-semibold text-white">
-                                    {receiptItemDetails ? `$${receiptItemDetails.gst.toFixed(2)}` : "Loading..."}
-                                </p>
-                            </div>
+                            {/* Receipt Details Display */}
+                            <div className="flex flex-row gap-10 mb-4">
+                                <div>
+                                    <p className="text-dark-secondary">GST</p>
+                                    <p className="text-2xl font-semibold text-white">
+                                        {receiptItemDetails ? `$${receiptItemDetails.gst.toFixed(2)}` : "Loading..."}
+                                    </p>
+                                </div>
 
-                            <div>
-                                <p className="text-dark-secondary">Service Charge</p>
-                                <p className="text-2xl font-semibold text-white">
-                                    {receiptItemDetails ? `$${receiptItemDetails.serviceCharge.toFixed(2)}` : "Loading..."}
-                                </p>
-                            </div>
+                                <div>
+                                    <p className="text-dark-secondary">Service Charge</p>
+                                    <p className="text-2xl font-semibold text-white">
+                                        {receiptItemDetails ? `$${receiptItemDetails.serviceCharge.toFixed(2)}` : "Loading..."}
+                                    </p>
+                                </div>
 
-                            <div>
-                                <p className="text-dark-secondary">Receipt Total</p>
-                                <p className="text-2xl font-semibold text-white">
-                                    {receiptItemDetails ? `$${totalAmount.toFixed(2)}` : "Loading..."}
-                                </p>
-                            </div>
-                        </div> 
+                                <div>
+                                    <p className="text-dark-secondary">Receipt Total</p>
+                                    <p className="text-2xl font-semibold text-white">
+                                        {receiptItemDetails ? `$${totalAmount.toFixed(2)}` : "Loading..."}
+                                    </p>
+                                </div>
+                            </div> 
 
-                        {/* Receipt Items Display */}
-                        { receiptItemDetails ? (
-                            <div className="relative">
-                                { receiptItemDetails.items.map((item, index) => (
-                                    <ReceiptItemContainer
-                                        key={index}
-                                        index={index}
-                                        item={item}
-                                        people={receiptDetails.members}
-                                        addItemShare={addItemShare}
-                                        clearItemShares={clearItemShares}
-                                        removeItemShare={removeItemShare}
-                                    />
-                                )) }
+                            {/* Receipt Items Display */}
+                            { receiptItemDetails && receiptItemDetails.items.map((item, index) => (
+                                <ReceiptItemContainer
+                                    key={index}
+                                    index={index}
+                                    item={item}
+                                    people={receiptDetails.members}
+                                    addItemShare={addItemShare}
+                                    clearItemShares={clearItemShares}
+                                    removeItemShare={removeItemShare}
+                                />
+                            )) }
+                        </div>
 
-                                { receiptDetails.members.length < 2 && (
-                                    <div className="absolute top-0 left-0 backdrop-blur-3xl flex flex-col items-center justify-center w-full h-full" style={{ backdropFilter: 'blur(12px)' }}>
-                                        <div className="md:max-w-1/3 text-center p-5">
-                                            <div className="inline-flex flex-row gap-3 text-3xl mb-2">
-                                                <FaHand />
-                                                <p className="font-bold">Wait!</p>
-                                            </div>
-                                            <p className="text-dark-secondary">Before proceeding, please ensure that at least two people have been added to the receipt.</p>
-                                        </div>
+                        { receiptDetails.members.length < 2 && (
+                            <div className="absolute top-0 left-0 flex flex-col items-center justify-center w-full h-full backdrop-blur-lg bg-black/40 rounded-lg">
+                                <GlassContainer styles="bg-white/5 text-center p-8">
+                                    <div className="inline-flex flex-row items-center gap-3 text-4xl mb-4">
+                                        <FaHand />
+                                        <p className="font-bold">Hold Up!</p>
                                     </div>
-                                ) }
+                                    <p className="text-gray-200 text-lg leading-relaxed mb-2">
+                                        You need at least <span className="font-semibold text-dark-accent">2 people</span> to split the receipt.
+                                    </p>
+                                    <p className="text-gray-300 text-sm">
+                                        Add more members in the Receipt Details section above to continue.
+                                    </p>
+                                </GlassContainer>
                             </div>
-                        ) : (
-                            <div></div>
                         ) }
                     </GlassContainer>
 
@@ -217,10 +232,55 @@ export default function SplitCosts() {
                             <h2 className="font-semibold text-white">Summary</h2>
                         </div>
                         <p className="text-dark-secondary mb-3">GST (9%) and Service Charge (10%) will be split depending on the shares assigned to each member.</p>
-                        
+
+                        {/* Personalised Summary */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {
+                                receiptItemDetails && receiptDetails.members
+                                    .map((member, index) => (
+                                        <PersonSummaryItem
+                                            key={index}
+                                            name={member}
+                                            receiptItems={receiptItemDetails.items.filter((item: ReceiptItem) => 
+                                                item.shares.some((share: ReceiptItemShare) => share.userName === member)
+                                            )}
+                                        />
+                                    ))
+                            }
+                        </div>
+
+                        {/* Save Confirmation */}
+                        <div className="text-white flex flex-col md:flex-row place-content-between pt-5">
+                            <div>
+                                <p className="text-lg font-bold">Done Editing?</p>
+                                <p className="text-dark-secondary">You will not be able to edit it after submission (for now...).</p>
+                            </div>
+                            <button
+                                className={`text-white py-2 px-6 rounded-lg duration-150 font-bold ${
+                                    availableSubmit 
+                                        ? 'bg-dark-accent hover:bg-accent cursor-pointer' 
+                                        : 'bg-gray-600 cursor-not-allowed'
+                                }`}
+                                disabled={!availableSubmit}
+                                // onClick={handleCreateReceipt}
+                            >
+                                I&apos;m Done!
+                            </button>
+                        </div>
                     </GlassContainer>
                 </GlassContainer>
             </div>
+
+            {/* Error Toast */}
+            <AnimatePresence>
+                {error.isDisplayed && (
+                    <Toast
+                        title={error.title}
+                        description={error.description}
+                        hideError={() => setError({ isDisplayed: false, title: "", description: "" })}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     )
 }

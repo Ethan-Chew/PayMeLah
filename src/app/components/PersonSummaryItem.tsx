@@ -1,4 +1,5 @@
 import { ReceiptItem } from "@/db/types";
+import GlassContainer from "./ui/GlassContainer";
 
 export default function PersonSummaryItem({ name, receiptItems }: { name: string, receiptItems: ReceiptItem[] }) {
     const totalAmount = receiptItems.reduce((accumulator, item) => {
@@ -8,9 +9,9 @@ export default function PersonSummaryItem({ name, receiptItems }: { name: string
     }, 0)
 
     return (
-        <div className="p-3 border border-dark-border rounded-lg text-white flex flex-col">
-            <div className="inline-flex place-content-between items-center mb-2">
-                <div className="inline-flex flex-row gap-3">
+        <GlassContainer>
+            <div className="w-full inline-flex place-content-between items-center mb-2">
+                <div className="flex-1 inline-flex flex-row gap-3">
                     <p className="h-8 w-8 bg-dark-accent rounded-full flex items-center justify-center font-semibold">{ name[0].toUpperCase() }</p>
                     <p className="text-lg font-semibold">{ name }</p>
                 </div>
@@ -29,6 +30,6 @@ export default function PersonSummaryItem({ name, receiptItems }: { name: string
                     )
                 }) }
             </div>
-        </div>
+        </GlassContainer>
     )
 }

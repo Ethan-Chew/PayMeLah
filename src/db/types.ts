@@ -4,14 +4,6 @@ type ReceiptDetails = {
     members: string[],
 }
 
-type CreateReceiptModal = {
-    title: string,
-    date: string,
-    payee: string,
-    others: string[],
-    saveGroup: boolean
-}
-
 type ReceiptItem = {
     name: string,
     quantity: number,
@@ -30,4 +22,4 @@ type ParsedReceipt = {
     serviceCharge: number,
 }
 
-export type { ReceiptDetails, CreateReceiptModal, ReceiptItem, ReceiptItemShare, ParsedReceipt };
+export type { ReceiptDetails, ReceiptItem, ReceiptItemShare, ParsedReceipt };
