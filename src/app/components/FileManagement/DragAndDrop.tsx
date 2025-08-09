@@ -65,7 +65,7 @@ export default function DragAndDrop({ setImageUrl }: IDragAndDrop) {
         <>
             <div
                 className={`
-                    w-full flex flex-col gap-2 items-center justify-center text-white border-2 border-lg border-dashed rounded-lg border-neutral-700 hover:border-neutral-500 p-5 md:p-10 px-10 md:px-20 duration-150
+                    w-full flex flex-col gap-2 items-center justify-center text-white border-2 border-lg border-dashed rounded-lg border-white/50 hover:border-white p-5 md:p-10 px-10 md:px-20 duration-150
                     ${isDragging ? "bg-neutral-800" : ""}
                 `}
                 onDrop={handleDrop}
@@ -97,7 +97,7 @@ export default function DragAndDrop({ setImageUrl }: IDragAndDrop) {
                                 <p className="text-dark-secondary">Supports JPG and PNG files</p>
                             </div>
                             <label htmlFor="fileUpload" className="cursor-pointer">
-                                <div className="text-lg px-6 py-2 inline-flex flex-row items-center gap-2 text-white bg-accent rounded-lg">
+                                <div className="text-lg px-6 py-2 inline-flex flex-row items-center gap-2 text-white bg-dark-accent rounded-lg">
                                     <MdOutlineFileUpload className="text-xl" />
                                     <p>Upload</p>
                                 </div>

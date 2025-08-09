@@ -68,6 +68,10 @@ input[type=number] {
   display: none;
 }
 
+@utility no-scrollbar {
+  @apply [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+}
+
 .grid-background {
   z-index: 0;
   width: 100%;
