@@ -22,9 +22,18 @@ export default function ScanUploadReceipt() {
                 <GlassSidebar />
 
                 <GlassContainer styles="flex-1 p-6 overflow-y-scroll no-scrollbar">
-                    <div>
-                        <h1 className="text-4xl font-bold mb-1">Capture your Receipt</h1>
-                        <p className="text-dark-secondary md:text-lg">Take a Clear Photo for us to analyse and determine items purchased</p>
+                    <div className="flex flex-col md:flex-row gap-5">
+                        <div className="flex-1">
+                            <h1 className="text-4xl font-bold mb-1">Capture your Receipt</h1>
+                            <p className="text-dark-secondary md:text-lg">Take a Clear Photo for us to analyse and determine items purchased</p>
+                        </div>
+                        
+                        { imageUrl && (
+                            <button
+                                className="bg-accent text-white px-6 py-2 rounded-lg mt-4 hover:bg-accent-hover transition-colors duration-200"
+                                onClick={() => router.push("/split")}
+                            >Continue</button>
+                        ) }
                     </div>
 
                     <div className="flex flex-row gap-3 my-5">

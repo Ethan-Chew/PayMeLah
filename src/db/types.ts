@@ -1,3 +1,9 @@
+type ReceiptDetails = {
+    title: string,
+    date: string,
+    members: string[],
+}
+
 type CreateReceiptModal = {
     title: string,
     date: string,
@@ -24,4 +30,4 @@ type ParsedReceipt = {
     serviceCharge: number,
 }
 
-export type { CreateReceiptModal, ReceiptItem, ReceiptItemShare, ParsedReceipt };
+export type { ReceiptDetails, CreateReceiptModal, ReceiptItem, ReceiptItemShare, ParsedReceipt };

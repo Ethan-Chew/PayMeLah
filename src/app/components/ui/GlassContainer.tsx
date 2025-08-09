@@ -9,7 +9,7 @@ interface GlassContainerProps {
 export default function GlassContainer({ children, styles, isPadding=true }: GlassContainerProps) {
     return (
         <div
-            className={`${styles} bg-white/5 backdrop-blur-lg rounded-lg ${isPadding ? 'p-4' : 'p-0'} shadow-sm border-2 border-white/20`}
+            className={`${styles} bg-white/3 backdrop-blur-lg rounded-lg ${isPadding ? 'p-4' : 'p-0'} shadow-sm border-2 border-white/20`}
         >
             {children}
         </div>

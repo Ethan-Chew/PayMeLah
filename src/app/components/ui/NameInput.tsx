@@ -26,13 +26,14 @@ export default function NameInput({ names, addName, removeName }: INameInput) {
     }
 
     return (
-        <div className="max-w-full flex flex-row gap-2 px-4 py-2 border border-dark-border overflow-x-auto whitespace-nowrap">
+        <div className="max-w-full flex flex-row gap-2 px-4 py-2 border-2 border-white/30 rounded-lg overflow-x-auto whitespace-nowrap">
             { names.map((name, index) => ( <NameTag key={index} name={name} removeName={removeName} /> ))}
             <input 
-                className="w-auto shrink-0 focus:outline-none"
+                className="w-auto shrink-0 focus:outline-none no-scrollbar"
                 onKeyDown={handleKeyPress}
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
+                placeholder="Enter names"
             />
         </div>
     )

@@ -6,27 +6,25 @@ import CustomSplitContainer from "./CustomSplitContainer";
 import { IReceiptItem } from "./IReceiptItem";
 
 export default function ReceiptItemContainer({ item, index, people, addItemShare, clearItemShares }: IReceiptItem & { index: number }) {
-    const [ selectedPerson, setSelectedPerson ] = useState<string>("select");
+    const [ selectedPerson, setSelectedPerson ] = useState<string | "select" | "split" | "custom">("select");
     const [ isModalOpen, setIsModalOpen ] = useState<boolean>(false);
 
     useEffect(() => {
-        if (selectedPerson === "select") return;
-
-        // Handle Split Equally
-        if (selectedPerson === "split") {
-            const share = item.quantity / people.length;
-            for (const person of people) {
-                addItemShare(item.name, person, share);
-            }
-            return;
+        switch (selectedPerson) {
+            case "select":
+                return;
+            case "split":
+                const share = item.quantity / people.length;
+                for (const person of people) {
+                    addItemShare(item.name, person, share);
+                }
+                return;
+            default:
+                if (selectedPerson !== "custom") {
+                    addItemShare(item.name, selectedPerson, item.quantity);
+                }
+                return;
         }
-
-        // Handle Individual Split
-        if (selectedPerson !== "custom") {
-            addItemShare(item.name, selectedPerson, item.quantity);
-            return;
-        }
-
     }, [selectedPerson, item.name, item.quantity, people.length, addItemShare]);
 
     return (
