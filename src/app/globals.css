@@ -13,6 +13,12 @@
   --color-dark-accent: #2DC8C5;
   --color-dark-border: #444444;
   --color-dark-secondary: #d6d6d6;
+
+  /* New Colours */
+  --color-teal: #2DC8C5;
+  --color-orange: #F7A072;
+  --color-pink: #CC76A1;
+
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -31,6 +37,11 @@
   --color-dark-border: var(--color-dark-border);
   --color-dark-secondary: var(--color-dark-secondary);
   --color-dark-container: var(--color-dark-secondary-background);
+
+  /* New Colours */
+  --color-teal: var(--color-teal);
+  --color-orange: var(--color-orange);
+  --color-pink: var(--color-pink);
 }
 
 /* Hide Stepper Arrows */
