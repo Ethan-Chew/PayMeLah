@@ -7,18 +7,19 @@ import { AnimatePresence } from "framer-motion";
 import GlassBackground from "@/app/components/ui/GlassBackground"
 import GlassSidebar from "@/app/components/GlassSidebar";
 import GlassContainer from "@/app/components/ui/GlassContainer";
+import ReceiptDetailsModal from "@/app/components/modals/ReceiptDetails";
+import ReceiptItemContainer from "@/app/components/ReceiptItem/ReceiptItemContainer";
+import PersonSummaryItem from "@/app/components/PersonSummaryItem";
+import Toast from "@/app/components/ui/Toast";
 import { ParsedReceipt, ReceiptDetails, ReceiptItem, ReceiptItemShare } from "@/db/types";
 import { parseReceiptData } from "@/utils/utils";
+import { PayMeLahSteps } from "@/app/components/ProgressBar/data";
 
 // React Icons
 import { FaMoneyBillWave } from "react-icons/fa";
 import { FaHand } from "react-icons/fa6";
 import { BsFillPeopleFill, BsFillBarChartFill } from "react-icons/bs";
 
-import ReceiptDetailsModal from "@/app/components/modals/ReceiptDetails";
-import ReceiptItemContainer from "@/app/components/ReceiptItem/ReceiptItemContainer";
-import PersonSummaryItem from "../components/PersonSummaryItem";
-import Toast from "../components/ui/Toast";
 
 export default function SplitCosts() {
     const router = useRouter();
@@ -139,7 +140,7 @@ export default function SplitCosts() {
             <GlassBackground />
 
             <div className="absolute w-full h-full flex flex-row gap-10 p-5">
-                <GlassSidebar />
+                <GlassSidebar step={PayMeLahSteps.Split} />
 
                 <GlassContainer styles="flex-1 p-6 space-y-5 overflow-y-scroll no-scrollbar">
                     <div className="mb-5">

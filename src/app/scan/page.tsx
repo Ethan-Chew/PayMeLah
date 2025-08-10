@@ -2,11 +2,14 @@
 import { useState } from "react";
 import { useAppData } from "@/app/providers/AppDataProvider";
 import { useRouter } from "next/navigation";
+
 import GlassBackground from "@/app/components/ui/GlassBackground";
 import GlassSidebar from "@/app/components/GlassSidebar";
 import GlassContainer from "@/app/components/ui/GlassContainer";
 import CameraCapture from "../components/FileManagement/CameraCapture";
 import DragAndDrop from "@/app/components/FileManagement/DragAndDrop";
+
+import { PayMeLahSteps } from "@/app/components/ProgressBar/data";
 import { MdOutlineFileUpload, MdOutlineCameraAlt } from "react-icons/md";
 
 export default function ScanUploadReceipt() {
@@ -18,8 +21,8 @@ export default function ScanUploadReceipt() {
         <div className="relative min-h-screen min-w-screen bg-dark-background text-white">
             <GlassBackground />
 
-            <div className="absolute w-full h-full flex flex-row gap-10 p-5">
-                <GlassSidebar />
+            <div className="absolute w-full h-full flex flex-col lg:flex-row gap-5 lg:gap-10 p-5">
+                <GlassSidebar step={PayMeLahSteps.Scan} />
 
                 <GlassContainer styles="flex-1 p-6 overflow-y-scroll no-scrollbar">
                     <div className="flex flex-col md:flex-row gap-5">

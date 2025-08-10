@@ -17,16 +17,16 @@ export const steps: Record<PayMeLahSteps, StepInfo> = {
     [PayMeLahSteps.Scan]: {
         title: "Scan",
         description: "Upload or take a picture of the receipt.",
-        icon: <MdDocumentScanner className="w-4 h-4 text-white" />,
+        icon: <MdDocumentScanner className="text-xl text-white" />,
     },
     [PayMeLahSteps.Split]: {
         title: "Split",
         description: "Assign items to each friend.",
-        icon: <MdFormatListBulleted className="w-4 h-4 text-white" />,
+        icon: <MdFormatListBulleted className="text-xl text-white" />,
     },
     [PayMeLahSteps.Share]: {
         title: "Share",
         description: "Send payment links to your friends.",
-        icon: <MdIosShare className="w-4 h-4 text-white" />,
+        icon: <MdIosShare className="text-xl text-white" />,
     },
 };
