@@ -1,4 +1,4 @@
-import { ReactNode, HTMLAttributes } from "react";
+import { ReactNode } from "react";
 
 interface GlassContainerProps {
     children: ReactNode;

@@ -187,7 +187,7 @@ export default function CameraCapture({ setImageUrl, imageUrl }: ICameraCapture)
                 mediaStream.getTracks().forEach((track) => track.stop());
             }
         };
-    }, [startWebcam])
+    }, [startWebcam, mediaStream])
 
     return (
         <div className="flex flex-col lg:flex-row w-full gap-5">

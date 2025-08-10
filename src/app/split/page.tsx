@@ -77,7 +77,7 @@ export default function SplitCosts() {
         }
 
         processReceipt();
-    }, [imageUrl]);
+    }, [imageUrl, router]);
 
     // Helper function to update a specific item
     const updateReceiptItem = useCallback((itemName: string, updateFn: (item: ReceiptItem) => ReceiptItem) => {

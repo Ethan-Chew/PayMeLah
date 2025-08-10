@@ -1,6 +1,6 @@
 "use client";
 
-import { CreateReceiptModal, ParsedReceipt } from "@/db/types";
+import { ReceiptDetails, ParsedReceipt } from "@/db/types";
 import { useEffect, useState } from "react";
 import { GoCopy } from "react-icons/go";
 import { FaXmark } from "react-icons/fa6";
@@ -10,7 +10,7 @@ import { useAppData } from "@/app/providers/AppDataProvider";
 import { saveReceiptToDB } from "@/utils/utils";
 
 interface IConfirmSaveReceiptProps {
-    receiptFormData: CreateReceiptModal,
+    receiptFormData: ReceiptDetails,
     receiptData: ParsedReceipt | null,
     hideModal: () => void,
 }
