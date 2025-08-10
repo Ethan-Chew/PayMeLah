@@ -22,4 +22,6 @@ type ParsedReceipt = {
     serviceCharge: number,
 }
 
-export type { ReceiptDetails, ReceiptItem, ReceiptItemShare, ParsedReceipt };
+type DisplayedReceipt = ReceiptDetails & ParsedReceipt
+
+export type { ReceiptDetails, ReceiptItem, ReceiptItemShare, ParsedReceipt, DisplayedReceipt };

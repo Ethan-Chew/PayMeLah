@@ -1,6 +1,6 @@
 "use server";
 import { groupTable, groupUsersTable, receiptItemSharesTable, receiptItemsTable, receiptsTable } from "@/db/schema";
-import { CreateReceiptModal, ParsedReceipt, ReceiptItem } from "@/db/types";
+import { ReceiptDetails, ParsedReceipt, ReceiptItem, DisplayedReceipt } from "@/db/types";
 import { db } from "@/utils/db";
 import OpenAI from 'openai';
 
@@ -85,15 +85,14 @@ serviceCharge|0.99`
     return parsedReceipt;
 }
 
-export async function saveReceiptToDB(receiptFormData: CreateReceiptModal, receiptData: ParsedReceipt) {
+export async function saveReceiptToDB(receiptDetails: ReceiptDetails, receiptData: ParsedReceipt) {
     let receiptId: string = "";
     await db.transaction(async (tx) => {
         // Create the Group
         const groupId = await tx.insert(groupTable).values({}).returning({ id: groupTable.id });
         
         // Add People to the Group
-        const userNames = [...receiptFormData.others, receiptFormData.payee].filter((name) => name !== "");
-        const insertedUsers = await tx.insert(groupUsersTable).values(userNames.map((name) => (
+        const insertedUsers = await tx.insert(groupUsersTable).values(receiptDetails.members.map((name) => (
             {
                 groupId: groupId[0].id,
                 userName: name
@@ -102,7 +101,7 @@ export async function saveReceiptToDB(receiptFormData: CreateReceiptModal, recei
         
         // Save the Receipt Data
         const receiptResult = await tx.insert(receiptsTable).values({
-            name: receiptFormData.title,
+            name: receiptDetails.title,
             groupId: groupId[0].id,
             gst: receiptData.gst.toString(),
             serviceCharge: receiptData.serviceCharge.toString(),
@@ -143,15 +142,6 @@ export async function saveReceiptToDB(receiptFormData: CreateReceiptModal, recei
     return receiptId;
 }
 
-export interface DisplayedReceipt {
-    name: string;
-    gst: string;
-    serviceCharge: string;
-    receiptItems: any[],
-    members: string[],
-    date: string
-}
-
 function formatDate(date: Date) {
     const day = date.getUTCDate();
     const month = date.toLocaleString('default', { month: 'long', timeZone: 'UTC' });
@@ -172,6 +162,7 @@ function formatDate(date: Date) {
 }
 
 export async function getReceiptData(receiptId: string) {
+    // Fetch the receipt data from the database
     const data = await db.select()
         .from(receiptsTable)
         .where(eq(receiptsTable.id, receiptId))
@@ -184,18 +175,19 @@ export async function getReceiptData(receiptId: string) {
     }
     
     const parsedReceipt: DisplayedReceipt = {
-        name: data[0].receipts.name,
-        gst: data[0].receipts.gst,
+        title: data[0].receipts.name,
         date: formatDate(data[0].receipts.createdAt),
-        serviceCharge: data[0].receipts.serviceCharge,
-        receiptItems: [],
+        gst: parseFloat(data[0].receipts.gst),
+        serviceCharge: parseFloat(data[0].receipts.serviceCharge),
         members: [],
+        items: []
     }
 
     const addedItems = new Set();
     const addedUsers = new Set();
     const addedShares = new Set();
 
+    // For every entry in the data, add the item, share and user to the parsedReceipt
     for (const entry of data) {
         const item = entry.receipt_items;
         const share = entry.receipt_item_shares;
@@ -203,10 +195,10 @@ export async function getReceiptData(receiptId: string) {
 
         // Add the Item to the receipt items
         if (!addedItems.has(item.id)) {
-            parsedReceipt.receiptItems.push({
+            parsedReceipt.items.push({
                 name: item.name,
                 quantity: item.quantity,
-                unitCost: item.unitCost,
+                unitCost: Number(item.unitCost),
                 shares: []
             });
             addedItems.add(item.id);
@@ -214,11 +206,11 @@ export async function getReceiptData(receiptId: string) {
 
         // Add the Share to the receipt items
         const shareId = `${item.id}-${share.userName}`;
-        if (!addedShares.has(shareId)) {
-            const parsedReceiptItemIndex = parsedReceipt.receiptItems.findIndex((receiptItem) => receiptItem.name === item.name);
-            parsedReceipt.receiptItems[parsedReceiptItemIndex].shares.push({
+        if (!addedShares.has(shareId) && share.userName) {
+            const parsedReceiptItemIndex = parsedReceipt.items.findIndex((receiptItem) => receiptItem.name === item.name);
+            parsedReceipt.items[parsedReceiptItemIndex].shares.push({
                 userName: share.userName,
-                share: share.share
+                share: parseFloat(share.share)
             });
             addedShares.add(shareId);
         }
@@ -241,16 +233,16 @@ export async function determineGSTServiceChargeSplit(receipt: DisplayedReceipt) 
     };
     const memberSplit: Record<string, MemberSplit> = {};
     for (const member of receipt.members) {
-        const memberSpend = receipt.receiptItems.reduce((acc, item) => {
+        const memberSpend = receipt.items.reduce((acc, item) => {
             const itemShare = item.shares.find((share: any) => share.userName === member);
             if (itemShare) {;
-                return acc + (parseFloat(item.unitCost) * parseFloat(itemShare.share));
+                return acc + (item.unitCost * itemShare.share);
             }
             return acc;
         }, 0);
 
-        const serviceCharge = parseFloat(receipt.serviceCharge) === 0 ? 0 : (memberSpend * 0.1);
-        const gst = parseFloat(receipt.gst) === 0 ? 0 : ((memberSpend + serviceCharge) * 0.09);
+        const serviceCharge = receipt.serviceCharge === 0 ? 0 : (memberSpend * 0.1);
+        const gst = receipt.gst === 0 ? 0 : ((memberSpend + serviceCharge) * 0.09);
 
         memberSplit[member] = {
             total: memberSpend + serviceCharge + gst,

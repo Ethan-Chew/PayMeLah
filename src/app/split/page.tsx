@@ -139,7 +139,7 @@ export default function SplitCosts() {
         <div className="relative min-h-screen min-w-screen bg-dark-background text-white">
             <GlassBackground />
 
-            <div className="absolute w-full h-full flex flex-col lg:flex-row gap-5 lg:gap-10 p-5">
+            <div className="relative w-full flex flex-col lg:flex-row gap-5 lg:gap-10 p-5 z-10">
                 <GlassSidebar step={PayMeLahSteps.Split} />
 
                 <GlassContainer styles="flex-1 p-6 space-y-5 overflow-y-scroll no-scrollbar">
