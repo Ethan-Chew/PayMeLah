@@ -6,9 +6,10 @@ import { FaXmark } from "react-icons/fa6";
 
 interface IDragAndDrop {
     setImageUrl: (imageUrl: string | null) => void;
+    imageUrl: string | null;
 }
 
-export default function DragAndDrop({ setImageUrl }: IDragAndDrop) {
+export default function DragAndDrop({ setImageUrl, imageUrl }: IDragAndDrop) {
     const [ isDragging, setIsDragging ] = useState(false);
     const [ uploadedFile, setUploadedFile ] = useState<File | null>(null);
     const [ error, setError ] = useState({
@@ -72,18 +73,25 @@ export default function DragAndDrop({ setImageUrl }: IDragAndDrop) {
                 onDragOver={handleDragOver}
                 onDragLeave={() => setIsDragging(false)}
             >
-                { uploadedFile ? (
+                { uploadedFile && imageUrl ? (
                     <>
                         <p className="text-dark-secondary">File Uploaded! Drag and Drop to upload a new file.</p>
-                        <div>
-                            <div className="inline-flex flex-row gap-10 items-center">
-                                <p className="font-semibold mb-1">{uploadedFile.name}</p>
-                                <FaXmark
-                                    className="cursor-pointer"
-                                    onClick={() => setUploadedFile(null)}
-                                />
+                        <div className="flex-1 inline-flex flex-row gap-2 items-center justify-center">
+                            <img
+                                alt="Captured receipt"
+                                src={decodeURIComponent(imageUrl)}
+                                className="h-14 w-15 object-cover rounded-lg border-2 border-white/20"
+                            />
+                            <div>
+                                <div className="inline-flex flex-row gap-10 items-center">
+                                    <p className="font-semibold mb-1">{uploadedFile.name}</p>
+                                    <FaXmark
+                                        className="cursor-pointer"
+                                        onClick={() => setUploadedFile(null)}
+                                    />
+                                </div>
+                                <p>{ formatFileSize(uploadedFile.size) }</p>
                             </div>
-                            <p>{ formatFileSize(uploadedFile.size) }</p>
                         </div>
                     </>
                 ) : (

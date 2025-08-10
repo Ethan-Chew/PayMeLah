@@ -5,9 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import Toast from "../ui/Toast";
 import GlassContainer from "../ui/GlassContainer";
 
-import { MdOutlineFileUpload, MdFlipCameraIos, MdError } from "react-icons/md";
+import { MdError } from "react-icons/md";
 import { FaSpinner } from "react-icons/fa";
 import { TiCameraOutline } from "react-icons/ti";
+import PhotoTips from "../PhotoTips";
 
 interface ICameraCapture {
     setImageUrl: (imageUrl: string | null) => void;
@@ -190,31 +191,7 @@ export default function CameraCapture({ setImageUrl, imageUrl }: ICameraCapture)
 
     return (
         <div className="flex flex-col lg:flex-row w-full gap-5">
-            <GlassContainer styles="text-white max-w-md">
-                <h2 className="text-2xl font-bold mb-3">Capturing a Good Photo</h2>
-
-                <div className="space-y-4">
-                    <div>
-                        <p className="text-xl font-semibold text-white">Avoid Unnecessary Distractions</p>
-                        <p className="text-dark-secondary">Ensure the frame includes only the receipt—remove any other items from view.</p>
-                    </div>
-                    
-                    <div>
-                        <p className="text-xl font-semibold text-white">Fitting the Receipt</p>
-                        <p className="text-dark-secondary">Ensure the whole receipt is visible and within the frame.</p>
-                    </div>
-                    
-                    <div>
-                        <p className="text-xl font-semibold text-white">Ensure Good Lighting</p>
-                        <p className="text-dark-secondary">Lighting should be balanced—not too bright or too dim—so all text on the receipt is clearly legible.</p>
-                    </div>
-                    
-                    <div>
-                        <p className="text-xl font-semibold text-white">Keep the Receipt Flat</p>
-                        <p className="text-dark-secondary">Lay the receipt on a flat surface without folds or wrinkles to ensure all text is visible.</p>
-                    </div>
-                </div>
-            </GlassContainer>
+            <PhotoTips />
             
             <div className="lg:flex-[2] flex flex-col">
                 <GlassContainer styles="relative overflow-hidden" isPadding={false}>
@@ -295,7 +272,7 @@ export default function CameraCapture({ setImageUrl, imageUrl }: ICameraCapture)
                     <div className="flex flex-row items-center justify-center gap-4">
                         {/* Capture/Loading Button */}
                         <button
-                            className={`relative p-4 rounded-full cursor-pointer duration-200 ${
+                            className={`relative p-2 md:p-4 rounded-full cursor-pointer duration-200 ${
                                 imageUrl || isLoading
                                     ? "bg-neutral-800 cursor-not-allowed" 
                                     : "bg-dark-accent hover:bg-accent shadow-lg shadow-dark-accent/25"

@@ -27,13 +27,13 @@ export default function ScanUploadReceipt() {
                 <GlassContainer styles="flex-1 p-6 overflow-y-scroll no-scrollbar">
                     <div className="flex flex-col md:flex-row gap-5">
                         <div className="flex-1">
-                            <h1 className="text-4xl font-bold mb-1">Capture your Receipt</h1>
+                            <h1 className="text-3xl md:text-4xl font-bold mb-1">Capture your Receipt</h1>
                             <p className="text-dark-secondary md:text-lg">Take a Clear Photo for us to analyse and determine items purchased</p>
                         </div>
                         
                         { imageUrl && (
                             <button
-                                className="bg-accent text-white px-6 py-2 rounded-lg mt-4 hover:bg-accent-hover transition-colors duration-200"
+                                className="bg-dark-accent text-white px-6 py-2 rounded-lg mt-4 duration-200 cursor-pointer hover:shadow-[0_0_10px_rgba(45,200,197,0.3)] transition-shadow font-semibold"
                                 onClick={() => router.push("/split")}
                             >Continue</button>
                         ) }
@@ -45,7 +45,7 @@ export default function ScanUploadReceipt() {
                     </div>
 
                     { selectedTab === "Scan" ? (
-                        <DragAndDrop setImageUrl={setImageUrl} />
+                        <DragAndDrop imageUrl={imageUrl} setImageUrl={setImageUrl} />
                     ) : (
                         <CameraCapture imageUrl={imageUrl} setImageUrl={setImageUrl} />
                     ) }
