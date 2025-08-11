@@ -255,6 +255,7 @@ export async function getReceiptData(receiptId: string) {
 }
 
 export async function determineGSTServiceChargeSplit(receipt: DisplayedReceipt) {
+    console.log(receipt)
     type MemberSplit = {
         total: number;
         serviceCharge: number;
@@ -269,7 +270,7 @@ export async function determineGSTServiceChargeSplit(receipt: DisplayedReceipt) 
             }
             return acc;
         }, 0);
-
+    
         const serviceCharge = receipt.serviceCharge === 0 ? 0 : (memberSpend * 0.1);
         const gst = receipt.gst === 0 ? 0 : ((memberSpend + serviceCharge) * 0.09);
 

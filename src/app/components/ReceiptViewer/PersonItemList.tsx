@@ -20,7 +20,7 @@ export default function PersonItemList({ name, items, memberGstServiceCharge }: 
                         return (
                             <div key={index} className="flex flex-row place-content-between items-center">
                                 <p>{ item.name } ({ parseFloat(userShare.share).toFixed(2) }x)</p>
-                                <p>${ (parseInt(item.unitCost) * parseFloat(userShare.share)).toFixed(2) }</p>
+                                <p>${ (item.unitCost * userShare.share).toFixed(2) }</p>
                             </div>
                         )
                     }
