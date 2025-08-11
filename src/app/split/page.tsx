@@ -20,12 +20,13 @@ import { FaMoneyBillWave } from "react-icons/fa";
 import { FaHand } from "react-icons/fa6";
 import { BsFillPeopleFill, BsFillBarChartFill } from "react-icons/bs";
 import ConfirmSaveReceipt from "../components/modals/ConfirmSaveReceipt";
-
+import UpdateReceiptItems from "../components/modals/UpdateReceiptItems";
 
 export default function SplitCosts() {
     const router = useRouter();
     const { imageUrl } = useAppData();
     const [ confirmSharePopup, setConfirmSharePopup ] = useState(false);
+    const [ showReceiptItemsModal, setShowReceiptItemsModal ] = useState(false);
     
     // Receipt Details and Parsed Items
     const currentDate = new Date().toISOString().split('T')[0]; // yyyy-MM-dd format
@@ -191,6 +192,7 @@ export default function SplitCosts() {
                         <ReceiptDetailsModal
                             details={receiptDetails}
                             setDetails={setReceiptDetails}
+                            setShowReceiptItemsModal={setShowReceiptItemsModal}
                         />
                     </GlassContainer>
 
@@ -322,6 +324,16 @@ export default function SplitCosts() {
                     hideModal={() => setConfirmSharePopup(false)}
                 />
             ) }
+
+            <AnimatePresence>
+                { showReceiptItemsModal && receiptItemDetails && (
+                    <UpdateReceiptItems
+                        receiptItemDetails={receiptItemDetails}
+                        setReceiptItemDetails={setReceiptItemDetails}
+                        hideModal={() => setShowReceiptItemsModal(false)}
+                    />
+                ) }
+            </AnimatePresence>
         </div>
     )
 }

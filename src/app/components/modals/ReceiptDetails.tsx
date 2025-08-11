@@ -5,9 +5,10 @@ import { ReceiptDetails } from "@/db/types"
 interface IReceiptDetails {
     details: ReceiptDetails,
     setDetails: (val: ReceiptDetails) => void,
+    setShowReceiptItemsModal: (vol: boolean) => void
 }
 
-export default function ReceiptDetailsModal({ details, setDetails }: IReceiptDetails) {
+export default function ReceiptDetailsModal({ details, setDetails, setShowReceiptItemsModal }: IReceiptDetails) {
     const addName = (name: string) => {
         if (name && !details.members.includes(name)) {
             setDetails({ ...details, members: [...details.members, name] });
@@ -64,7 +65,8 @@ export default function ReceiptDetailsModal({ details, setDetails }: IReceiptDet
                     <p className="text-dark-secondary text-sm">PayMeLah! uses AI Technologies to retrieve receipt items, hence, there might be some discrepancies. You may update receipt items if needed.</p>
                 </div>
                 <button
-                    className="p-3 bg-dark-accent hover:bg-accent text-white rounded-md font-semibold"
+                    className="p-3 bg-dark-accent hover:bg-accent text-white rounded-md font-semibold transition-all duration-150 cursor-pointer"
+                    onClick={() => setShowReceiptItemsModal(true)}
                 >
                     Update Items
                 </button>
