@@ -1,5 +1,5 @@
 "use client"
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAppData } from "../providers/AppDataProvider";
 import { AnimatePresence } from "framer-motion";
@@ -25,12 +25,16 @@ export default function SplitCosts() {
     const router = useRouter();
     const { imageUrl } = useAppData();
     
+    // Receipt Details and Parsed Items
+    const currentDate = new Date().toISOString().split('T')[0]; // yyyy-MM-dd format
     const [ receiptDetails, setReceiptDetails ] = useState<ReceiptDetails>({
         title: "",
-        date: new Date().toLocaleDateString('en-SG').replace(/\//g, "-"),
+        date: currentDate,
         members: []
     });
     const [ receiptItemDetails, setReceiptItemDetails ] = useState<ParsedReceipt | null>(null);
+
+    // Calculated Memoised Values
     const totalAmount = useMemo<number>(() => {
         if (!receiptItemDetails) return 0;
         
@@ -51,6 +55,11 @@ export default function SplitCosts() {
             return Math.abs(totalAssigned - item.quantity) <= 0.001;
         });
     }, [receiptItemDetails, receiptDetails]);
+    
+    // Use ref to track processing state to prevent duplicate API calls
+    const processingRef = useRef(false);
+
+    // Error Handling
     const [error, setError] = useState({
         isDisplayed: false,
         title: "",
@@ -60,20 +69,41 @@ export default function SplitCosts() {
     // Process Receipt Data based on Image on Init
     useEffect(() => {
         const processReceipt = async () => {
-            if (!imageUrl) router.push("/");
-
-            const receiptResponse = await parseReceiptData(imageUrl as string);
-            if (receiptResponse) {
-                setReceiptItemDetails(receiptResponse);
+            // Guard clauses to prevent unnecessary processing
+            if (!imageUrl || processingRef.current) {
                 return;
             }
 
-            // Handle Errors
-            setError({
-                isDisplayed: true,
-                title: "Error Processing Receipt",
-                description: "An error occurred while processing the receipt. Please try again."
-            });
+            if (!imageUrl) {
+                router.push("/");
+                return;
+            }
+
+            processingRef.current = true;
+
+            try {
+                const receiptResponse = await parseReceiptData(imageUrl as string);
+                if (receiptResponse) {
+                    setReceiptItemDetails(receiptResponse);
+                } else {
+                    // Handle case where parsing failed but no error was thrown
+                    setError({
+                        isDisplayed: true,
+                        title: "Error Processing Receipt",
+                        description: "An error occurred while processing the receipt. Please try again."
+                    });
+                }
+            } catch (err) {
+                console.error('Error processing receipt:', err);
+                // Handle actual errors from parseReceiptData
+                setError({
+                    isDisplayed: true,
+                    title: "Error Processing Receipt",
+                    description: "An error occurred while processing the receipt. Please try again."
+                });
+            } finally {
+                processingRef.current = false;
+            }
         }
 
         processReceipt();
@@ -136,13 +166,13 @@ export default function SplitCosts() {
     }, [updateReceiptItem]);
 
     return (
-        <div className="relative min-h-screen min-w-screen bg-dark-background text-white">
+        <div className="relative h-screen bg-dark-background text-white overflow-hidden">
             <GlassBackground />
 
-            <div className="relative w-full flex flex-col lg:flex-row gap-5 lg:gap-10 p-5 z-10">
+            <div className="relative w-full h-full flex flex-col lg:flex-row gap-5 lg:gap-10 p-5 z-10">
                 <GlassSidebar step={PayMeLahSteps.Split} />
 
-                <GlassContainer styles="flex-1 p-6 space-y-5 overflow-y-scroll no-scrollbar">
+                <GlassContainer styles="flex-1 p-6 space-y-5 overflow-y-auto no-scrollbar h-full">
                     <div className="mb-5">
                         <h1 className="text-4xl font-bold mb-1">Split with your Friends</h1>
                         <p className="text-dark-secondary md:text-lg">Assign items to each friend and share the list with them.</p>

@@ -60,7 +60,7 @@ export default function ReceiptDetailsModal({ details, setDetails }: IReceiptDet
 
             <div className="w-full flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
                 <div className="flex-1">
-                    <p className="text-lg font-semibold">Items don&apost look right?</p>
+                    <p className="text-lg font-semibold">Items don&apos;t look right?</p>
                     <p className="text-dark-secondary text-sm">PayMeLah! uses AI Technologies to retrieve receipt items, hence, there might be some discrepancies. You may update receipt items if needed.</p>
                 </div>
                 <button

@@ -3,86 +3,115 @@ import { groupTable, groupUsersTable, receiptItemSharesTable, receiptItemsTable,
 import { ReceiptDetails, ParsedReceipt, ReceiptItem, DisplayedReceipt } from "@/db/types";
 import { db } from "@/utils/db";
 import OpenAI from 'openai';
+import { zodTextFormat } from "openai/helpers/zod";
+import { z } from "zod";
 
 import dotenv from 'dotenv';
 import { eq } from "drizzle-orm";
 dotenv.config();
 
 export async function parseReceiptData(fileUrl: string) {
-    if (!fileUrl) {
-        return null;
+    // Input validation
+    if (!fileUrl || typeof fileUrl !== 'string') {
+        throw new Error('Invalid file URL provided');
     }
 
-    const systemMessage = `Extract items as: ItemName|Quantity|Price per line. End with: gst|amount, serviceCharge|amount. Use exact item names, remove item codes, ignore modifiers, handle duplicate items. Missing qty=1, free=0, no GST=gst|0, no service=serviceCharge|0. No extra text.
-Example:
-Veg Sandwich|1|5.75
-Latte|2|4.25
-Blueberry Muffin|0|0
-gst|0
-serviceCharge|0.99`
+    // Validate environment variables
+    if (!process.env.OPENAI_KEY) {
+        throw new Error('OpenAI API key is not configured');
+    }
+
+    const receiptItem = z.object({
+        name: z.string().min(1, "Item name cannot be empty"),
+        quantity: z.number().min(0, "Quantity must be non-negative"),
+        unitPrice: z.number().min(0, "Unit price must be non-negative"),
+    });
+
+    const receipt = z.object({
+        items: z.array(receiptItem),
+        gst: z.number().min(0, "GST must be non-negative"),
+        serviceCharge: z.number().min(0, "Service charge must be non-negative"),
+    });
+
+    const systemMessage = `You are given the text of a receipt. Extract the structured information into the schema.
+    Rules:
+    - Keep exact item names but strip codes/SKUs and modifiers (sizes, options).
+    - Merge duplicate items into one entry and sum the quantity.
+    - If quantity is missing → set to 1.
+    - If item is FREE or has price 0 → qty is still counted, but unitPrice = 0.
+    - If GST is missing → gst = 0.
+    - If service charge is missing → serviceCharge = 0.`;
 
     const isDev = process.env.DEPLOYMENT_TYPE === "development";
 
-    // Use the OpenAI API to Analyse the Receipt
-    const client = new OpenAI({
-        apiKey: process.env.OPENAI_KEY,
-    })
-
-    let textualResponse: string = "";
+    let openAIResponse: any;
     if (isDev) {
-        // MOCK: API Response for Development
-        textualResponse = `
-        Veg Sandwich|1|5.75  
-        Latte|2|4.25  
-        Blueberry Muffin|0|0  
-        Green Tea|1|3.15  
-        Pasta Alfredo|1|12.99  
-        Sparkling Water|1|2.5  
-        Fruit Bowl|2|0  
-        gst|0  
-        serviceCharge|0.99
-        `
+        // Sample API Response for Development
+        openAIResponse = {
+            "items": [
+                { "name": "Veg Sandwich", "quantity": 1, "unitPrice": 5.75 },
+                { "name": "Latte", "quantity": 2, "unitPrice": 4.25 },
+                { "name": "Blueberry Muffin", "quantity": 0, "unitPrice": 0 },
+                { "name": "Green Tea", "quantity": 1, "unitPrice": 3.15 },
+                { "name": "Pasta Alfredo", "quantity": 1, "unitPrice": 12.99 },
+                { "name": "Sparkling Water", "quantity": 1, "unitPrice": 2.5 },
+                { "name": "Fruit Bowl", "quantity": 2, "unitPrice": 0 }
+            ],
+            "gst": 0,
+            "serviceCharge": 0.99
+        };
     } else {
-        const apiResponse = await client.responses.create({
-            model: "gpt-4.1-nano",
-            input: [
-                {
-                    role: "user",
-                    content: [
-                        { type: "input_text", text: systemMessage },
-                        {
-                            type: "input_image",
-                            image_url: `${fileUrl}`,
-                            detail: "auto"
-                        }
-                    ]
+        try {
+            const client = new OpenAI({
+                apiKey: process.env.OPENAI_KEY,
+            });
+
+            const apiResponse = await client.responses.parse({
+                model: "gpt-5-nano",
+                input: [
+                    {
+                        role: "user",
+                        content: [
+                            { type: "input_text", text: systemMessage },
+                            {
+                                type: "input_image",
+                                image_url: `${fileUrl}`,
+                                detail: "auto"
+                            }
+                        ]
+                    }
+                ],
+                text: {
+                    format: zodTextFormat(receipt, "receipt_format"),
                 }
-            ]
-        });
-        textualResponse = apiResponse.output_text
-    }
-
-    const parsedReceipt: ParsedReceipt = { items: [], gst: -1, serviceCharge: -1 };
-    for (const line of textualResponse.trim().split(/\r?\n/)) {
-        const splittedLine = line.split("|");
-
-        if (splittedLine.length === 3) { // Receipt Item
-            if (parseInt(splittedLine[1]) !== 0) {
-                parsedReceipt.items.push({
-                    name: splittedLine[0].trim(),
-                    quantity: parseInt(splittedLine[1]),
-                    unitCost: parseFloat(splittedLine[2]) / parseInt(splittedLine[1]),
-                    shares: []
-                });   
-            }
-        } else if (splittedLine[0].trim().toLowerCase() === "gst") {
-            parsedReceipt.gst = parseFloat(splittedLine[1]) || 0
-        } else if (splittedLine[0].trim().toLowerCase() === "servicecharge") {
-            parsedReceipt.serviceCharge = parseFloat(splittedLine[1]) || 0
+            });
+            openAIResponse = apiResponse.output_parsed;
+        } catch (error) {
+            console.error('OpenAI API error:', error);
+            throw new Error('Failed to parse receipt using OpenAI API');
         }
     }
 
-    return parsedReceipt;
+    // Validate the OpenAI response
+    try {
+        const validatedResponse = receipt.parse(openAIResponse);
+        
+        const parsedReceipt: ParsedReceipt = {
+            items: validatedResponse.items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                unitCost: item.unitPrice,
+                shares: []
+            })),
+            gst: validatedResponse.gst,
+            serviceCharge: validatedResponse.serviceCharge
+        };
+
+        return parsedReceipt;
+    } catch (error) {
+        console.error('Response validation error:', error);
+        throw new Error('Invalid response format from OpenAI API');
+    }
 }
 
 export async function saveReceiptToDB(receiptDetails: ReceiptDetails, receiptData: ParsedReceipt) {

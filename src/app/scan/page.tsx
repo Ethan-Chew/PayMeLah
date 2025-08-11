@@ -18,13 +18,13 @@ export default function ScanUploadReceipt() {
     const [ selectedTab, setSelectedTab ] = useState<"Scan" | "Upload">("Scan");
 
     return (
-        <div className="relative min-h-screen min-w-screen bg-dark-background text-white">
+        <div className="relative h-screen bg-dark-background text-white flex flex-col">
             <GlassBackground />
 
-            <div className="relative w-full flex flex-col lg:flex-row gap-5 lg:gap-10 p-5 z-10">
+            <div className="relative w-full h-full flex flex-col lg:flex-row gap-5 lg:gap-10 p-5 z-10">
                 <GlassSidebar step={PayMeLahSteps.Scan} />
 
-                <GlassContainer styles="flex-1 p-6 overflow-y-scroll no-scrollbar">
+                <GlassContainer styles="flex-1 p-6 space-y-5 overflow-y-auto no-scrollbar h-full">
                     <div className="flex flex-col md:flex-row gap-5">
                         <div className="flex-1">
                             <h1 className="text-3xl md:text-4xl font-bold mb-1">Capture your Receipt</h1>

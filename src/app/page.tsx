@@ -5,9 +5,9 @@ import ScanReceiptButton from "@/app/components/ui/ScanReceiptButton";
 
 export default function Home() {
     return (
-        <div className="relative min-h-screen min-w-screen bg-dark-background text-white">
+        <div className="relative min-h-screen bg-dark-background text-white">
             <GlassBackground />
-            <div className="absolute w-full h-full flex flex-col items-center justify-start md:justify-center text-center z-20 p-3 py-15 sm:p-10 md:p-24 lg:p-32 xl:p-64">
+            <div className="relative w-full flex flex-col items-center justify-start md:justify-center text-center z-20 p-3 py-15 sm:p-10 md:p-24 lg:p-32">
                 {/* Header */}
                 <header className="mb-10">
                     <h1 className="font-bold text-5xl md:text-6xl">PayMeLah!</h1>
