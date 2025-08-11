@@ -19,11 +19,13 @@ import { PayMeLahSteps } from "@/app/components/ProgressBar/data";
 import { FaMoneyBillWave } from "react-icons/fa";
 import { FaHand } from "react-icons/fa6";
 import { BsFillPeopleFill, BsFillBarChartFill } from "react-icons/bs";
+import ConfirmSaveReceipt from "../components/modals/ConfirmSaveReceipt";
 
 
 export default function SplitCosts() {
     const router = useRouter();
     const { imageUrl } = useAppData();
+    const [ confirmSharePopup, setConfirmSharePopup ] = useState(false);
     
     // Receipt Details and Parsed Items
     const currentDate = new Date().toISOString().split('T')[0]; // yyyy-MM-dd format
@@ -293,7 +295,7 @@ export default function SplitCosts() {
                                         : 'bg-gray-600 cursor-not-allowed'
                                 }`}
                                 disabled={!availableSubmit}
-                                // onClick={handleCreateReceipt}
+                                onClick={() => setConfirmSharePopup(true)}
                             >
                                 I&apos;m Done!
                             </button>
@@ -312,6 +314,14 @@ export default function SplitCosts() {
                     />
                 )}
             </AnimatePresence>
+
+            { confirmSharePopup && receiptItemDetails !== null && (
+                <ConfirmSaveReceipt
+                    receiptDetails={receiptDetails}
+                    receiptItemDetails={receiptItemDetails}
+                    hideModal={() => setConfirmSharePopup(false)}
+                />
+            ) }
         </div>
     )
 }
