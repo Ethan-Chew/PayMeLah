@@ -20,12 +20,13 @@ import { FaMoneyBillWave } from "react-icons/fa";
 import { FaHand } from "react-icons/fa6";
 import { BsFillPeopleFill, BsFillBarChartFill } from "react-icons/bs";
 import ConfirmSaveReceipt from "../components/modals/ConfirmSaveReceipt";
-
+import UpdateReceiptItems from "../components/modals/UpdateReceiptItems";
 
 export default function SplitCosts() {
     const router = useRouter();
     const { imageUrl } = useAppData();
     const [ confirmSharePopup, setConfirmSharePopup ] = useState(false);
+    const [ showReceiptItemsModal, setShowReceiptItemsModal ] = useState(false);
     
     // Receipt Details and Parsed Items
     const currentDate = new Date().toISOString().split('T')[0]; // yyyy-MM-dd format
@@ -191,6 +192,7 @@ export default function SplitCosts() {
                         <ReceiptDetailsModal
                             details={receiptDetails}
                             setDetails={setReceiptDetails}
+                            setShowReceiptItemsModal={setShowReceiptItemsModal}
                         />
                     </GlassContainer>
 
@@ -203,7 +205,7 @@ export default function SplitCosts() {
                             </div>   
 
                             {/* Receipt Details Display */}
-                            <div className="flex flex-row gap-10 mb-4">
+                            <div className="flex flex-col lg:flex-row gap-10 mb-4">
                                 <div>
                                     <p className="text-dark-secondary">GST</p>
                                     <p className="text-2xl font-semibold text-white">
@@ -240,7 +242,7 @@ export default function SplitCosts() {
                             )) }
                         </div>
 
-                        { receiptDetails.members.length < 2 && (
+                        { receiptItemDetails && receiptDetails.members.length < 2 && (
                             <div className="absolute top-0 left-0 flex flex-col items-center justify-center w-full h-full backdrop-blur-lg bg-black/40 rounded-lg">
                                 <GlassContainer styles="bg-white/5 text-center p-8">
                                     <div className="inline-flex flex-row items-center gap-3 text-4xl mb-4">
@@ -322,6 +324,16 @@ export default function SplitCosts() {
                     hideModal={() => setConfirmSharePopup(false)}
                 />
             ) }
+
+            <AnimatePresence>
+                { showReceiptItemsModal && receiptItemDetails && (
+                    <UpdateReceiptItems
+                        receiptItemDetails={receiptItemDetails}
+                        setReceiptItemDetails={setReceiptItemDetails}
+                        hideModal={() => setShowReceiptItemsModal(false)}
+                    />
+                ) }
+            </AnimatePresence>
         </div>
     )
 }
