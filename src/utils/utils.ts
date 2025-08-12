@@ -3,6 +3,7 @@ import { groupTable, groupUsersTable, receiptItemSharesTable, receiptItemsTable,
 import { ReceiptDetails, ParsedReceipt, ReceiptItem, DisplayedReceipt } from "@/db/types";
 import { db } from "@/utils/db";
 import OpenAI from 'openai';
+import { observeOpenAI } from "langfuse";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 
@@ -62,9 +63,9 @@ export async function parseReceiptData(fileUrl: string) {
         };
     } else {
         try {
-            const client = new OpenAI({
+            const client = observeOpenAI(new OpenAI({
                 apiKey: process.env.OPENAI_KEY,
-            });
+            }));
 
             const apiResponse = await client.responses.parse({
                 model: "gpt-5-nano",

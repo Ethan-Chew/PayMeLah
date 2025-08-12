@@ -40,11 +40,11 @@ export default function ScanUploadReceipt() {
                     </div>
 
                     <div className="flex flex-row gap-3 my-5">
-                        <Tab isSelected={selectedTab === "Scan"} setIsSelected={setSelectedTab} title="Scan" icon={<MdOutlineFileUpload className="text-xl" />} />
-                        <Tab isSelected={selectedTab === "Upload"} setIsSelected={setSelectedTab} title="Upload" icon={<MdOutlineCameraAlt className="text-xl" />} />
+                        <Tab isSelected={selectedTab === "Upload"} setIsSelected={setSelectedTab} title="Upload" icon={<MdOutlineFileUpload className="text-xl" />} />
+                        <Tab isSelected={selectedTab === "Scan"} setIsSelected={setSelectedTab} title="Scan" icon={<MdOutlineCameraAlt className="text-xl" />} />
                     </div>
 
-                    { selectedTab === "Scan" ? (
+                    { selectedTab === "Upload" ? (
                         <DragAndDrop imageUrl={imageUrl} setImageUrl={setImageUrl} />
                     ) : (
                         <CameraCapture imageUrl={imageUrl} setImageUrl={setImageUrl} />
