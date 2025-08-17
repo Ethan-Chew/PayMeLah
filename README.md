@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PayMeLah! 💸
 
-## Getting Started
+> **_Split shared expenses with your friends, easily._**
 
-First, run the development server:
+![PayMeLah!](./docs/img/PayMeLah!.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+PayMeLah! simplifies the process of splitting bills and shared expenses among friends, through the use of AI-powered receipt scanning and smart expense distribution.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Motivation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Whenever I go out with friends, I always end up being the one paying. Instead of just sending a photo of the receipt (which is pretty error-prone, like forgetting the GST or accidentally paying for it when it's already included), _is there a better way to handle this?_
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Current Optical Character Recognition (OCR) methods are not sufficient, as different restaurants or shops may use different receipt formats, making it practically impossible to handle every case. So, why not leverage the rise of affordable Large Language Models (LLMs) to handle the job (~S$0.003181 per receipt)?
 
-## Learn More
+## Using PayMeLah!
 
-To learn more about Next.js, take a look at the following resources:
+1. Simply **Scan** or **Upload** an image from your Phone/Laptop
+2. Allow the LLM to work its ✨magic✨
+3. Enter some details about your Receipt, like who was with you
+4. Review Receipt Items detected by the LLM, update them as required
+5. Complete and Share with your friends!
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Some... Considerations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+> [!WARNING]  
+> Due to the inherent nature of Large Language Models, the LLM may occasionally produce inaccurate results or "hallucinations."
 
-## Deploy on Vercel
+While I've optimized the prompt to minimize token usage while maximizing accuracy, errors can still occur. Users will still have to review and edit the AI-generated receipt parsing results as needed to ensure complete accuracy.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- The current model used by PayMeLah! is `gpt-4o-mini`, which is the cheapest vision-enabled model from OpenAI (as of December 2024).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+PayMeLah!'s design was inspired by Glassmorphism, using design elements with the appearance of Frosted Glass.
+
+## Technology Stack
+
+### Frontend
+
+- **Next.js 15** - React framework with App Router
+- **TypeScript** - Type-safe JavaScript development
+- **Tailwind CSS 4** - Modern CSS framework
+- **Framer Motion** - Smooth animations and transitions
+- **React Icons** - Icon library
+
+### Backend & Database
+
+- **PostgreSQL** - Robust relational database
+- **Drizzle ORM** - Type-safe database toolkit
+- **Supabase** - Backend-as-a-Service platform
+
+### AI & Processing
+
+- **OpenAI API** - Intelligent receipt parsing and OCR
+- **Langfuse** - LLM observability and monitoring
+
+## Future Improvements
+
+PayMeLah! is in its prototype stage, and I'll try my best to update it as time passes.
+
+- **Receipt Processing**: Improve AI accuracy for different receipt types
+- **Account-Based System**: Allow users to save groups of friends they often hang out with
