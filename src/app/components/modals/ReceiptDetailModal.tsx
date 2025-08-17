@@ -1,24 +1,24 @@
 "use client"
 import NameInput from "../ui/NameInput";
-import { CreateReceiptModal } from "@/db/types";
+import { ReceiptDetails } from "@/db/types";
 
 interface IReceiptDetailModal {
-    formData: CreateReceiptModal,
-    setFormData: (val: CreateReceiptModal) => void,
+    receiptDetails: ReceiptDetails,
+    setReceiptDetails: (val: ReceiptDetails) => void,
     setShowUpdateItemsModal: () => void,
 }
 
-export default function ReceiptDetailModal({ formData, setFormData, setShowUpdateItemsModal }: IReceiptDetailModal) {
+export default function ReceiptDetailModal({ receiptDetails, setReceiptDetails, setShowUpdateItemsModal }: IReceiptDetailModal) {
     const addName = (name: string) => {
-        if (name && !formData.others.includes(name)) {
-            setFormData({ ...formData, others: [...formData.others, name] });
+        if (name && !receiptDetails.members.includes(name)) {
+            setReceiptDetails({ ...receiptDetails, members: [...receiptDetails.members, name] });
         }
     };
     
     const removeName = (name: string) => {
-        setFormData({
-            ...formData,
-            others: formData.others.filter((n) => n !== name)
+        setReceiptDetails({
+            ...receiptDetails,
+            members: receiptDetails.members.filter((n) => n !== name)
         });
     };
 
@@ -30,8 +30,8 @@ export default function ReceiptDetailModal({ formData, setFormData, setShowUpdat
                     <input
                         className="px-4 py-2 border border-dark-border w-full focus:outline-none"
                         placeholder="The Amazing Restaurant"
-                        value={formData.title}
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        value={receiptDetails.title}
+                        onChange={(e) => setReceiptDetails({ ...receiptDetails, title: e.target.value })}
                         required
                     />
                     <p className="text-dark-secondary text-sm mt-1">The Restaurant/Store&apos;s Name</p>
@@ -42,8 +42,8 @@ export default function ReceiptDetailModal({ formData, setFormData, setShowUpdat
                     <input
                         className="px-4 py-2 border border-dark-border text-white w-full focus:outline-none"
                         type="date"
-                        value={formData.date}
-                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        value={receiptDetails.date}
+                        onChange={(e) => setReceiptDetails({ ...receiptDetails, date: e.target.value })}
                         required
                     />
                 </div>
@@ -51,21 +51,9 @@ export default function ReceiptDetailModal({ formData, setFormData, setShowUpdat
 
             <div className="w-full flex flex-col md:flex-row gap-5">
                 <div className="flex-1">
-                    <p className="text-lg font-semibold mb-2">Who Paid?</p>
-                    <input
-                        className="px-4 py-2 border border-dark-border w-full focus:outline-none"
-                        placeholder=""
-                        value={formData.payee}
-                        onChange={(e) => setFormData({ ...formData, payee: e.target.value })}
-                        required
-                    />
-                    <p className="text-dark-secondary text-sm mt-1">The Name of the Person who Paid</p>
-                </div>
-
-                <div className="flex-1">
                     <p className="text-lg font-semibold mb-2">Others with you</p>
                     <NameInput
-                        names={formData.others}
+                        names={receiptDetails.members}
                         addName={addName}
                         removeName={removeName}
                     />
@@ -75,7 +63,7 @@ export default function ReceiptDetailModal({ formData, setFormData, setShowUpdat
 
             <div className="w-full flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
                 <div className="flex-1">
-                    <p className="text-lg font-semibold">Items don't look right?</p>
+                    <p className="text-lg font-semibold">Items don&apos;t look right?</p>
                     <p className="text-dark-secondary text-sm">PayMeLah! uses AI Technologies to retrieve receipt items, hence, there might be some discrepancies. You may update receipt items if needed.</p>
                 </div>
                 <button

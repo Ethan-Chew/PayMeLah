@@ -6,9 +6,10 @@ import { FaXmark } from "react-icons/fa6";
 
 interface IDragAndDrop {
     setImageUrl: (imageUrl: string | null) => void;
+    imageUrl: string | null;
 }
 
-export default function DragAndDrop({ setImageUrl }: IDragAndDrop) {
+export default function DragAndDrop({ setImageUrl, imageUrl }: IDragAndDrop) {
     const [ isDragging, setIsDragging ] = useState(false);
     const [ uploadedFile, setUploadedFile ] = useState<File | null>(null);
     const [ error, setError ] = useState({
@@ -65,25 +66,32 @@ export default function DragAndDrop({ setImageUrl }: IDragAndDrop) {
         <>
             <div
                 className={`
-                    w-full flex flex-col gap-2 items-center justify-center text-white border-2 border-lg border-dashed rounded-lg border-neutral-700 hover:border-neutral-500 p-5 md:p-10 px-10 md:px-20 duration-150
+                    w-full flex flex-col gap-2 items-center justify-center text-white border-2 border-lg border-dashed rounded-lg border-white/50 hover:border-white p-5 md:p-10 px-10 md:px-20 duration-150
                     ${isDragging ? "bg-neutral-800" : ""}
                 `}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={() => setIsDragging(false)}
             >
-                { uploadedFile ? (
+                { uploadedFile && imageUrl ? (
                     <>
                         <p className="text-dark-secondary">File Uploaded! Drag and Drop to upload a new file.</p>
-                        <div>
-                            <div className="inline-flex flex-row gap-10 items-center">
-                                <p className="font-semibold mb-1">{uploadedFile.name}</p>
-                                <FaXmark
-                                    className="cursor-pointer"
-                                    onClick={() => setUploadedFile(null)}
-                                />
+                        <div className="flex-1 inline-flex flex-row gap-2 items-center justify-center">
+                            <img
+                                alt="Captured receipt"
+                                src={decodeURIComponent(imageUrl)}
+                                className="h-14 w-15 object-cover rounded-lg border-2 border-white/20"
+                            />
+                            <div>
+                                <div className="inline-flex flex-row gap-10 items-center">
+                                    <p className="font-semibold mb-1">{uploadedFile.name}</p>
+                                    <FaXmark
+                                        className="cursor-pointer"
+                                        onClick={() => setUploadedFile(null)}
+                                    />
+                                </div>
+                                <p>{ formatFileSize(uploadedFile.size) }</p>
                             </div>
-                            <p>{ formatFileSize(uploadedFile.size) }</p>
                         </div>
                     </>
                 ) : (
@@ -97,7 +105,7 @@ export default function DragAndDrop({ setImageUrl }: IDragAndDrop) {
                                 <p className="text-dark-secondary">Supports JPG and PNG files</p>
                             </div>
                             <label htmlFor="fileUpload" className="cursor-pointer">
-                                <div className="text-lg px-6 py-2 inline-flex flex-row items-center gap-2 text-white bg-accent rounded-lg">
+                                <div className="text-lg px-6 py-2 inline-flex flex-row items-center gap-2 text-white bg-dark-accent rounded-lg">
                                     <MdOutlineFileUpload className="text-xl" />
                                     <p>Upload</p>
                                 </div>

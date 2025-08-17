@@ -5,4 +5,5 @@ export interface IReceiptItem {
     people: string[],
     addItemShare: (itemName: string, userName: string, share: number) => void,
     clearItemShares: (itemName: string) => void,
+    removeItemShare?: (itemName: string, userName: string) => void,
 }

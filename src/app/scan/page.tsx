@@ -1,63 +1,68 @@
-"use client";
+"use client"
 import { useState } from "react";
-import { useAppData } from "../providers/AppDataProvider";
+import { useAppData } from "@/app/providers/AppDataProvider";
 import { useRouter } from "next/navigation";
-import SideBar from "../components/SideBar";
-import DragAndDrop from "../components/FileManagement/DragAndDrop";
-import CameraCapture from "../components/FileManagement/CameraCapture";
 
-export default function ReceiptScanning() {
+import GlassBackground from "@/app/components/ui/GlassBackground";
+import GlassSidebar from "@/app/components/GlassSidebar";
+import GlassContainer from "@/app/components/ui/GlassContainer";
+import CameraCapture from "../components/FileManagement/CameraCapture";
+import DragAndDrop from "@/app/components/FileManagement/DragAndDrop";
+
+import { PayMeLahSteps } from "@/app/components/ProgressBar/data";
+import { MdOutlineFileUpload, MdOutlineCameraAlt } from "react-icons/md";
+
+export default function ScanUploadReceipt() {
     const router = useRouter();
     const { imageUrl, setImageUrl } = useAppData();
     const [ selectedTab, setSelectedTab ] = useState<"Scan" | "Upload">("Scan");
 
     return (
-        <div className="bg-dark-background min-h-screen flex flex-col sm:flex-row">
-            <SideBar />
-            <div className="ml-0 sm:ml-[25%] lg:ml-[20%] flex-1 flex flex-col gap-5 p-5 sm:p-10 box-border">
-                <div className="text-white">
-                    <h1 className="font-semibold text-3xl mb-1">Capture your Receipt</h1>
-                    <p className="text-dark-secondary">Taking a Clear Photo for us to Analyse</p>
-                </div>
+        <div className="relative h-screen bg-dark-background text-white flex flex-col">
+            <GlassBackground />
 
-                <div className="w-full flex flex-row gap-5 mb-5">
-                    <button
-                        className={`flex-1 p-3 text-white hover:font-semibold duration-150 rounded-lg cursor-pointer ${selectedTab === "Scan" ? "font-semibold bg-dark-accent" : "hover:bg-neutral-800 border border-dark-border"}`}
-                        onClick={() => {
-                            setImageUrl(null);
-                            setSelectedTab("Scan");
-                        }}
-                    >
-                        Upload
-                    </button>
-                    <button
-                        className={`flex-1 p-3 text-white hover:font-semibold duration-150 rounded-lg cursor-pointer ${selectedTab === "Upload" ? "font-semibold bg-dark-accent" : "hover:bg-neutral-800 border-dark-border"}`}
-                        onClick={() => {
-                            setImageUrl(null);
-                            setSelectedTab("Upload")
-                        }}
-                    >
-                        Scan
-                    </button>
-                </div>
-                { selectedTab === "Scan" ? (
-                    <DragAndDrop
-                        setImageUrl={setImageUrl}
-                    />
-                ) : (
-                    <CameraCapture
-                        setImageUrl={setImageUrl}
-                        imageUrl={imageUrl}
-                    />
-                )}
+            <div className="relative w-full h-full flex flex-col lg:flex-row gap-5 lg:gap-10 p-5 z-10">
+                <GlassSidebar step={PayMeLahSteps.Scan} />
 
-                { !!imageUrl && (
-                    <button
-                        className="bg-dark-accent hover:bg-accent text-white rounded-lg p-3 text-semibold duration-150"
-                        onClick={() => router.push("/split")}
-                    >Continue</button>
-                ) }
+                <GlassContainer styles="flex-1 p-6 space-y-5 overflow-y-auto no-scrollbar h-full">
+                    <div className="flex flex-col md:flex-row gap-5">
+                        <div className="flex-1">
+                            <h1 className="text-3xl md:text-4xl font-bold mb-1">Capture your Receipt</h1>
+                            <p className="text-dark-secondary md:text-lg">Take a Clear Photo for us to analyse and determine items purchased</p>
+                        </div>
+                        
+                        { imageUrl && (
+                            <button
+                                className="bg-dark-accent text-white px-6 py-2 rounded-lg mt-4 duration-200 cursor-pointer hover:shadow-[0_0_10px_rgba(45,200,197,0.3)] transition-shadow font-semibold"
+                                onClick={() => router.push("/split")}
+                            >Continue</button>
+                        ) }
+                    </div>
+
+                    <div className="flex flex-row gap-3 my-5">
+                        <Tab isSelected={selectedTab === "Upload"} setIsSelected={setSelectedTab} title="Upload" icon={<MdOutlineFileUpload className="text-xl" />} />
+                        <Tab isSelected={selectedTab === "Scan"} setIsSelected={setSelectedTab} title="Scan" icon={<MdOutlineCameraAlt className="text-xl" />} />
+                    </div>
+
+                    { selectedTab === "Upload" ? (
+                        <DragAndDrop imageUrl={imageUrl} setImageUrl={setImageUrl} />
+                    ) : (
+                        <CameraCapture imageUrl={imageUrl} setImageUrl={setImageUrl} />
+                    ) }
+                </GlassContainer>
             </div>
         </div>
-    );
+    )
+}
+
+function Tab({ isSelected, setIsSelected, title, icon }: { isSelected: boolean, setIsSelected: (tab: "Scan" | "Upload") => void, title: string, icon: React.ReactNode }) {
+    return (
+        <button
+            className={`inline-flex flex-1 items-center justify-center gap-2 p-2 rounded-lg text-lg text-white cursor-pointer ${isSelected ? "bg-dark-accent" : "bg-white/5 backdrop-blur-lg border-2 border-white/20"}`}
+            onClick={() => setIsSelected(title as "Scan" | "Upload")}
+        >
+            {icon}
+            <span>{title}</span>
+        </button>
+    )
 }

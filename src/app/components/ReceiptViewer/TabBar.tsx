@@ -4,7 +4,7 @@ export default function TabBar({ options, selectedOption, setSelectedOption }: {
   setSelectedOption: (option: string) => void;
 }) {
   return (
-    <div className="flex flex-row gap-2 overflow-x-auto scrollbar-hide px-2">
+    <div className="flex flex-row gap-2 overflow-x-auto no-scrollbar px-2">
       {options.map((option) => (
         <button
           key={option}

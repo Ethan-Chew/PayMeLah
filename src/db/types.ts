@@ -1,9 +1,7 @@
-type CreateReceiptModal = {
+type ReceiptDetails = {
     title: string,
     date: string,
-    payee: string,
-    others: string[],
-    saveGroup: boolean
+    members: string[],
 }
 
 type ReceiptItem = {
@@ -24,4 +22,6 @@ type ParsedReceipt = {
     serviceCharge: number,
 }
 
-export type { CreateReceiptModal, ReceiptItem, ReceiptItemShare, ParsedReceipt };
+type DisplayedReceipt = ReceiptDetails & ParsedReceipt
+
+export type { ReceiptDetails, ReceiptItem, ReceiptItemShare, ParsedReceipt, DisplayedReceipt };

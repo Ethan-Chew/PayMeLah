@@ -47,14 +47,14 @@ export default function CustomSplitContainer({ item, people, addItemShare, clear
                 }
             }
         }
-    }, [splitPeopleInfo, item.quantity, item.name, addItemShare, clearItemShares]);
+    }, [splitPeopleInfo, addItemShare, clearItemShares, item.quantity, item.name]);
 
     return (
         <motion.div
             initial={{ opacity: 0, y: -100 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="mt-3 p-3 rounded-lg border border-dark-accent text-white"
+            className="mt-3 p-3 rounded-lg border-2 border-dark-accent text-white"
         >
             <p className="text-lg font-semibold text-dark-accent mb-3">Assign by Person</p>
 

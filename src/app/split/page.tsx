@@ -1,309 +1,336 @@
 "use client"
-import { useCallback, useEffect, useState } from "react";
-import { useAppData } from "../providers/AppDataProvider";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { CreateReceiptModal, ParsedReceipt, ReceiptItem, ReceiptItemShare } from "@/db/types";
-import { AnimatePresence } from "motion/react";
+import { useAppData } from "../providers/AppDataProvider";
+import { AnimatePresence } from "framer-motion";
 
-import ReceiptDetailModal from "../components/modals/ReceiptDetailModal";
-import SideBar from "../components/SideBar";
-import { PayMeLahSteps } from "../components/ProgressBar/data";
-import Toast from "../components/ui/Toast";
-import ReceiptItemContainer from "../components/ReceiptItem/ReceiptItemContainer";
-import PersonSummaryItem from "../components/PersonSummaryItem";
-import ConfirmSaveReceipt from "../components/modals/ConfirmSaveReceipt";
-import UpdateReceiptItems from "../components/modals/UpdateReceiptItems";
+import GlassBackground from "@/app/components/ui/GlassBackground"
+import GlassSidebar from "@/app/components/GlassSidebar";
+import GlassContainer from "@/app/components/ui/GlassContainer";
+import ReceiptDetailsModal from "@/app/components/modals/ReceiptDetails";
+import ReceiptItemContainer from "@/app/components/ReceiptItem/ReceiptItemContainer";
+import PersonSummaryItem from "@/app/components/PersonSummaryItem";
+import Toast from "@/app/components/ui/Toast";
+import { ParsedReceipt, ReceiptDetails, ReceiptItem, ReceiptItemShare } from "@/db/types";
 import { parseReceiptData } from "@/utils/utils";
+import { PayMeLahSteps } from "@/app/components/ProgressBar/data";
 
 // React Icons
 import { FaMoneyBillWave } from "react-icons/fa";
 import { FaHand } from "react-icons/fa6";
 import { BsFillPeopleFill, BsFillBarChartFill } from "react-icons/bs";
+import ConfirmSaveReceipt from "../components/modals/ConfirmSaveReceipt";
+import UpdateReceiptItems from "../components/modals/UpdateReceiptItems";
 
 export default function SplitCosts() {
     const router = useRouter();
     const { imageUrl } = useAppData();
+    const [ confirmSharePopup, setConfirmSharePopup ] = useState(false);
+    const [ showReceiptItemsModal, setShowReceiptItemsModal ] = useState(false);
+    
+    // Receipt Details and Parsed Items
+    const currentDate = new Date().toISOString().split('T')[0]; // yyyy-MM-dd format
+    const [ receiptDetails, setReceiptDetails ] = useState<ReceiptDetails>({
+        title: "",
+        date: currentDate,
+        members: []
+    });
+    const [ receiptItemDetails, setReceiptItemDetails ] = useState<ParsedReceipt | null>(null);
 
-    const [ error, setError ] = useState({
+    // Calculated Memoised Values
+    const totalAmount = useMemo<number>(() => {
+        if (!receiptItemDetails) return 0;
+        
+        const itemsTotal = receiptItemDetails.items.reduce((acc, item) => {
+            return acc + (item.quantity * item.unitCost);
+        }, 0);
+        
+        return itemsTotal + receiptItemDetails.gst + receiptItemDetails.serviceCharge;
+    }, [receiptItemDetails]);
+    const availableSubmit = useMemo<boolean>(() => {
+        if (!receiptItemDetails || receiptDetails.title === "" || receiptDetails.members.length < 2) {
+            return false;
+        }
+
+        // Check if all items are fully assigned
+        return receiptItemDetails.items.every(item => {
+            const totalAssigned = item.shares?.reduce((total, share) => total + share.share, 0) || 0;
+            return Math.abs(totalAssigned - item.quantity) <= 0.001;
+        });
+    }, [receiptItemDetails, receiptDetails]);
+    
+    // Use ref to track processing state to prevent duplicate API calls
+    const processingRef = useRef(false);
+
+    // Error Handling
+    const [error, setError] = useState({
         isDisplayed: false,
         title: "",
         description: ""
     });
-    const [ receiptData, setReceiptData ] = useState<ParsedReceipt | null>(null);
-    const [ receiptFormData, setReceiptFormData ] = useState<CreateReceiptModal>({
-        title: "",
-        date: new Date().toLocaleDateString('en-SG').replace(/\//g, "-"),
-        payee: "",
-        others: [],
-        saveGroup: false
-    });
-    const [ confirmSharePopup, setConfirmSharePopup ] = useState(false);
-    const [ showUpdateItemsModal, setShowUpdateItemsModal ] = useState(false);
 
     // Process Receipt Data based on Image on Init
     useEffect(() => {
         const processReceipt = async () => {
-            if (!imageUrl) router.push("/");
-
-            const receiptResponse = await parseReceiptData(imageUrl as string);
-            if (receiptResponse) {
-                setReceiptData(receiptResponse);
+            // Guard clauses to prevent unnecessary processing
+            if (!imageUrl || processingRef.current) {
                 return;
             }
 
-            // Handle Errors
-            setError({
-                isDisplayed: true,
-                title: "Error Processing Receipt",
-                description: "An error occurred while processing the receipt. Please try again."
-            });
+            if (!imageUrl) {
+                router.push("/");
+                return;
+            }
+
+            processingRef.current = true;
+
+            try {
+                const receiptResponse = await parseReceiptData(imageUrl as string);
+                if (receiptResponse) {
+                    setReceiptItemDetails(receiptResponse);
+                } else {
+                    // Handle case where parsing failed but no error was thrown
+                    setError({
+                        isDisplayed: true,
+                        title: "Error Processing Receipt",
+                        description: "An error occurred while processing the receipt. Please try again."
+                    });
+                }
+            } catch (err) {
+                console.error('Error processing receipt:', err);
+                // Handle actual errors from parseReceiptData
+                setError({
+                    isDisplayed: true,
+                    title: "Error Processing Receipt",
+                    description: "An error occurred while processing the receipt. Please try again."
+                });
+            } finally {
+                processingRef.current = false;
+            }
         }
 
         processReceipt();
-    }, [imageUrl]);
+    }, [imageUrl, router]);
 
-    // Add a new Share to the Receipt Item
-    const addItemShare = useCallback((itemName: string, userName: string, userShare: number) => {
-        setReceiptData((previous: ParsedReceipt | null) => {
-            if (previous === null) return null;
+    // Helper function to update a specific item
+    const updateReceiptItem = useCallback((itemName: string, updateFn: (item: ReceiptItem) => ReceiptItem) => {
+        setReceiptItemDetails((previous: ParsedReceipt | null) => {
+            if (!previous) return null;
 
-            // Find the Item to update
-            const item = previous.items.find((item) => item.name === itemName);
-            if (!item) return previous;
+            const itemIndex = previous.items.findIndex((item) => item.name === itemName);
+            if (itemIndex === -1) return previous;
 
-            // Create a new item share
-            const newShare = { userName: userName, share: userShare };
-
-            // Add the new share to the item
-            const newItem = {
-                ...item,
-                shares: item.shares ? [...item.shares, newShare] : [newShare]
-            };
-
-            // Update the item in the list
-            const newItems = previous.items.map((item) => {
-                if (item.name === itemName) {
-                    return newItem;
-                }
-                return item;
-            });
+            const updatedItems = [...previous.items];
+            updatedItems[itemIndex] = updateFn(updatedItems[itemIndex]);
 
             return {
                 ...previous,
-                items: newItems
+                items: updatedItems
             };
         });
     }, []);
 
+    // Add a new Share to the Receipt Item
+    const addItemShare = useCallback((itemName: string, userName: string, userShare: number) => {
+        updateReceiptItem(itemName, (item) => {
+            // Check if user already has a share for this item
+            const existingShareIndex = item.shares?.findIndex(share => share.userName === userName) ?? -1;
+            
+            if (existingShareIndex !== -1) {
+                // Update existing share
+                const updatedShares = [...(item.shares || [])];
+                updatedShares[existingShareIndex] = { userName, share: userShare };
+                return { ...item, shares: updatedShares };
+            } else {
+                // Add new share
+                const newShare = { userName, share: userShare };
+                return {
+                    ...item,
+                    shares: item.shares ? [...item.shares, newShare] : [newShare]
+                };
+            }
+        });
+    }, [updateReceiptItem]);
+
     // Remove all Shares from the Receipt Item
     const clearItemShares = useCallback((itemName: string) => {
-        setReceiptData((previous: ParsedReceipt | null) => {
-            if (previous === null) return null;
+        updateReceiptItem(itemName, (item) => ({
+            ...item,
+            shares: []
+        }));
+    }, [updateReceiptItem]);
 
-            // Find the Item to update
-            const item = previous.items.find((item) => item.name === itemName);
-            if (!item) return previous;
-
-            // Clear the shares of the item
-            const newItem = {
-                ...item,
-                shares: []
-            };
-
-            // Update the item in the list
-            const newItems = previous.items.map((item) => {
-                if (item.name === itemName) {
-                    return newItem;
-                }
-                return item;
-            });
-
-            return {
-                ...previous,
-                items: newItems
-            };
-        })
-    }, []);
-
-    // Check if the Receipt can be created
-    const handleCreateReceipt = () => {
-        if (!receiptData) return;
-
-        // Check if there is at least two people in the receipt
-        const numberOfPeople = [...receiptFormData.others, receiptFormData.payee].filter((person) => person !== "").length;
-        if (numberOfPeople < 2) {
-            setError({
-                isDisplayed: true,
-                title: "Not Enough People",
-                description: "You need at least two people to split the receipt."
-            });
-            return;
-        }
-
-        // Ensure that all items have shares assigned
-        for (const item of receiptData.items) {
-            if (item.shares.length === 0) {
-                setError({
-                    isDisplayed: true,
-                    title: "Missing Shares",
-                    description: `The item "${item.name}" has no shares assigned. Please assign shares before proceeding.`
-                });
-                return;
-            }
-        }
-
-        // Check if all fields have been filled
-        if (!receiptFormData.title || !receiptFormData.date) {
-            setError({
-                isDisplayed: true,
-                title: "Missing Fields",
-                description: "Please fill in all the required fields before proceeding."
-            });
-            return;
-        }
-        
-        setConfirmSharePopup(true);
-    }
+    // Remove a specific user's share from an item
+    const removeItemShare = useCallback((itemName: string, userName: string) => {
+        updateReceiptItem(itemName, (item) => ({
+            ...item,
+            shares: item.shares?.filter(share => share.userName !== userName) || []
+        }));
+    }, [updateReceiptItem]);
 
     return (
-        <div className="bg-dark-background min-h-screen flex flex-col sm:flex-row">
-            <SideBar currentStep={PayMeLahSteps.Split} />
-            <div className="ml-0 sm:ml-[25%] lg:ml-[20%] flex-1 flex flex-col py-10 p-5 gap-5 border-box max-w-full">
-                <header>
-                    <h1 className="text-3xl font-bold text-white">Split with your Friends</h1>
-                    <p className="text-dark-secondary">Assign items to each friend and share the list with them.</p>
-                </header>
+        <div className="relative h-screen bg-dark-background text-white overflow-hidden">
+            <GlassBackground />
 
-                {/* Receipt Details Modal */}
-                <div className="p-5 rounded-lg border border-dark-border text-white border-box">
-                    <div className="text-2xl inline-flex flex-row items-center gap-3">
-                        <FaMoneyBillWave />
-                        <h2 className="font-semibold">Receipt Details</h2>
-                    </div>
-                    <p className="text-dark-secondary mb-3">Enter some key details about your receipt to make it easily identifiable</p>
+            <div className="relative w-full h-full flex flex-col lg:flex-row gap-5 lg:gap-10 p-5 z-10">
+                <GlassSidebar step={PayMeLahSteps.Split} />
 
-                    <ReceiptDetailModal
-                        formData={receiptFormData}
-                        setFormData={setReceiptFormData}
-                        setShowUpdateItemsModal={() => setShowUpdateItemsModal(!showUpdateItemsModal)}
-                    />
-                </div>
-
-                {/* Split Receipt Items */}
-                <div className="p-5 rounded-lg border border-dark-border text-white border-box">
-                    <div className="text-2xl inline-flex flex-row items-center gap-3 mb-3">
-                        <BsFillPeopleFill />
-                        <h2 className="font-semibold text-white">Split with Friends</h2>
+                <GlassContainer styles="flex-1 p-6 space-y-5 overflow-y-auto no-scrollbar h-full">
+                    <div className="mb-5">
+                        <h1 className="text-4xl font-bold mb-1">Split with your Friends</h1>
+                        <p className="text-dark-secondary md:text-lg">Assign items to each friend and share the list with them.</p>
                     </div>
 
-                    {/* GST and Service Charge Display */}
-                    <div className="flex flex-row gap-10 mb-4">
-                        <div>
-                            <p className="text-dark-secondary">GST</p>
-                            <p className="text-2xl font-semibold text-white">{ receiptData ? `$${receiptData.gst}` : "Loading..." }</p>
+                    {/* Receipt Details Modal */}
+                    <GlassContainer>
+                        <div className="text-2xl inline-flex flex-row items-center gap-3">
+                            <FaMoneyBillWave />
+                            <h2 className="font-semibold">Receipt Details</h2>
                         </div>
+                        <p className="text-dark-secondary mb-3">Enter some key details about your receipt to make it easily identifiable</p>
+    
+                        <ReceiptDetailsModal
+                            details={receiptDetails}
+                            setDetails={setReceiptDetails}
+                            setShowReceiptItemsModal={setShowReceiptItemsModal}
+                        />
+                    </GlassContainer>
 
+                    {/* Split Receipt Items */}
+                    <GlassContainer styles="relative">
                         <div>
-                            <p className="text-dark-secondary">Service Charge</p>
-                            <p className="text-2xl font-semibold text-white">{ receiptData ? `$${receiptData.serviceCharge}` : "Loading..." }</p>
-                        </div>
-                    </div>
+                            <div className="text-2xl inline-flex flex-row items-center gap-3 mb-2">
+                                <BsFillPeopleFill />
+                                <h2 className="font-semibold">Split with Friends</h2>
+                            </div>   
 
-                    {/* Receipt Items */}
-                    { receiptData && (
-                        <div className="relative">
-                            { receiptData.items.map((item, index) => (
+                            {/* Receipt Details Display */}
+                            <div className="flex flex-col lg:flex-row gap-10 mb-4">
+                                <div>
+                                    <p className="text-dark-secondary">GST</p>
+                                    <p className="text-2xl font-semibold text-white">
+                                        {receiptItemDetails ? `$${receiptItemDetails.gst.toFixed(2)}` : "Loading..."}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-dark-secondary">Service Charge</p>
+                                    <p className="text-2xl font-semibold text-white">
+                                        {receiptItemDetails ? `$${receiptItemDetails.serviceCharge.toFixed(2)}` : "Loading..."}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-dark-secondary">Receipt Total</p>
+                                    <p className="text-2xl font-semibold text-white">
+                                        {receiptItemDetails ? `$${totalAmount.toFixed(2)}` : "Loading..."}
+                                    </p>
+                                </div>
+                            </div> 
+
+                            {/* Receipt Items Display */}
+                            { receiptItemDetails && receiptItemDetails.items.map((item, index) => (
                                 <ReceiptItemContainer
                                     key={index}
                                     index={index}
                                     item={item}
-                                    people={[...receiptFormData.others, receiptFormData.payee].filter((person) => person !== "")}
+                                    people={receiptDetails.members}
                                     addItemShare={addItemShare}
                                     clearItemShares={clearItemShares}
+                                    removeItemShare={removeItemShare}
                                 />
                             )) }
-                            
-                            { [...receiptFormData.others, receiptFormData.payee].filter((person) => person !== "").length < 2 && (
-                                <div className="absolute top-0 left-0 bg-dark-background/50 backdrop-blur-sm rounded-lg border-dark-border border-2 flex flex-col items-center justify-center w-full h-full">
-                                    <div className="md:max-w-1/3 text-center p-5">
-                                        <div className="inline-flex flex-row gap-3 text-3xl mb-2">
-                                            <FaHand />
-                                            <p className="font-bold">Wait!</p>
-                                        </div>
-                                        <p className="text-dark-secondary">Before proceeding, please ensure that at least two people have been added to the receipt.</p>
-                                    </div>
-                                </div>
-                            ) }
                         </div>
-                    ) }
-                </div>
 
-                {/* Separator */}
-                <div className="w-full inline-flex flex-row items-center justify-center my-8">
-                    <div className="h-[1px] bg-dark-border w-[50vw]" />
-                </div>
+                        { receiptItemDetails && receiptDetails.members.length < 2 && (
+                            <div className="absolute top-0 left-0 flex flex-col items-center justify-center w-full h-full backdrop-blur-lg bg-black/40 rounded-lg">
+                                <GlassContainer styles="bg-white/5 text-center p-8">
+                                    <div className="inline-flex flex-row items-center gap-3 text-4xl mb-4">
+                                        <FaHand />
+                                        <p className="font-bold">Hold Up!</p>
+                                    </div>
+                                    <p className="text-gray-200 text-lg leading-relaxed mb-2">
+                                        You need at least <span className="font-semibold text-dark-accent">2 people</span> to split the receipt.
+                                    </p>
+                                    <p className="text-gray-300 text-sm">
+                                        Add more members in the Receipt Details section above to continue.
+                                    </p>
+                                </GlassContainer>
+                            </div>
+                        ) }
+                    </GlassContainer>
 
-                {/* Receipt Summary */}
-                <div className="text-white">
-                    <div className="text-2xl inline-flex flex-row items-center gap-3">
-                        <BsFillBarChartFill />
-                        <h2 className="font-semibold text-white">Summary</h2>
-                    </div>
-                    <p className="text-dark-secondary mb-3">GST (9%) and Service Charge (10%) will be split depending on the shares assigned to each member.</p>
+                    {/* Receipt Item Summary */}
+                    <GlassContainer>
+                        <div className="text-2xl inline-flex flex-row items-center gap-3">
+                            <BsFillBarChartFill />
+                            <h2 className="font-semibold text-white">Summary</h2>
+                        </div>
+                        <p className="text-dark-secondary mb-3">GST (9%) and Service Charge (10%) will be split depending on the shares assigned to each member.</p>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {/* Personalised Summary */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                             {
-                                receiptData && [...receiptFormData.others, receiptFormData.payee]
-                                    .filter((person) => person !== "")
-                                    .map((person, index) => (
+                                receiptItemDetails && receiptDetails.members
+                                    .map((member, index) => (
                                         <PersonSummaryItem
                                             key={index}
-                                            name={person}
-                                            receiptItems={receiptData.items.filter((item: ReceiptItem) => 
-                                                item.shares.some((share: ReceiptItemShare) => share.userName === person)
+                                            name={member}
+                                            receiptItems={receiptItemDetails.items.filter((item: ReceiptItem) => 
+                                                item.shares.some((share: ReceiptItemShare) => share.userName === member)
                                             )}
                                         />
                                     ))
                             }
-                    </div>
-                </div>
+                        </div>
 
-                {/* Save Confirmation */}
-                <div className="text-white flex flex-col md:flex-row place-content-between py-5">
-                    <div>
-                        <p className="text-lg font-bold">Done Editing?</p>
-                        <p className="text-dark-secondary">You will not be able to edit it after submission (for now...).</p>
-                    </div>
-                    <button
-                        className="text-dark-background bg-dark-accent hover:bg-accent py-2 px-4 rounded-lg duration-150 cursor-pointer"
-                        onClick={handleCreateReceipt}
-                    >
-                        I&apos;m Done!
-                    </button>
-                </div>
+                        {/* Save Confirmation */}
+                        <div className="text-white flex flex-col md:flex-row place-content-between pt-5">
+                            <div>
+                                <p className="text-lg font-bold">Done Editing?</p>
+                                <p className="text-dark-secondary">You will not be able to edit it after submission (for now...).</p>
+                            </div>
+                            <button
+                                className={`text-white py-2 px-6 rounded-lg duration-150 font-bold ${
+                                    availableSubmit 
+                                        ? 'bg-dark-accent hover:bg-accent cursor-pointer' 
+                                        : 'bg-gray-600 cursor-not-allowed'
+                                }`}
+                                disabled={!availableSubmit}
+                                onClick={() => setConfirmSharePopup(true)}
+                            >
+                                I&apos;m Done!
+                            </button>
+                        </div>
+                    </GlassContainer>
+                </GlassContainer>
             </div>
-            
-            { error.isDisplayed && (
-                <Toast
-                    title={error.title}
-                    description={error.description}
-                    hideError = {() => setError({ ...error, isDisplayed: false })}
-                />
-            ) }
 
-            { confirmSharePopup && receiptData !== null && (
+            {/* Error Toast */}
+            <AnimatePresence>
+                {error.isDisplayed && (
+                    <Toast
+                        title={error.title}
+                        description={error.description}
+                        hideError={() => setError({ isDisplayed: false, title: "", description: "" })}
+                    />
+                )}
+            </AnimatePresence>
+
+            { confirmSharePopup && receiptItemDetails !== null && (
                 <ConfirmSaveReceipt
-                    receiptFormData={receiptFormData}
-                    receiptData={receiptData}
+                    receiptDetails={receiptDetails}
+                    receiptItemDetails={receiptItemDetails}
                     hideModal={() => setConfirmSharePopup(false)}
                 />
             ) }
 
             <AnimatePresence>
-                { showUpdateItemsModal && (
+                { showReceiptItemsModal && receiptItemDetails && (
                     <UpdateReceiptItems
-                        receiptItems={receiptData ? receiptData.items : []}
-                        hideModal={() => setShowUpdateItemsModal(false)}
+                        receiptItemDetails={receiptItemDetails}
+                        setReceiptItemDetails={setReceiptItemDetails}
+                        hideModal={() => setShowReceiptItemsModal(false)}
                     />
                 ) }
             </AnimatePresence>

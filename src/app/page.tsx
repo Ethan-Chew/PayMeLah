@@ -1,53 +1,56 @@
-import ScanReceiptButton from "./components/ui/ScanReceiptButton";
-import TermsAndPrivacy from "./components/TermsAndPrivacy";
+import GlassTermsAndPrivacy from "@/app/components/GlassTermsAndPrivacy";
+import GlassBackground from "@/app/components/ui/GlassBackground";
+import GlassContainer from "@/app/components/ui/GlassContainer";
+import ScanReceiptButton from "@/app/components/ui/ScanReceiptButton";
 
 export default function Home() {
-  return (
-    <div className="bg-dark-background text-white">
-      <header className="flex items-center">
-        <div className="md:w-1/2 z-10 my-20 md:my-32 mx-5 sm:mx-10">
-          <p className="text-xl font-semibold">PayMeLah!</p>
-          <p className="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-dark-accent to-accent leading-[1.3] mb-5">Split shared expenses with your friends, easily.</p>
-          <ScanReceiptButton />
-        </div>
-        <div className="grid-background inset-0 absolute h-[70vh]"></div>
-      </header>
+    return (
+        <div className="relative min-h-screen bg-dark-background text-white">
+            <GlassBackground />
+            <div className="relative w-full flex flex-col items-center justify-start md:justify-center text-center z-20 p-3 py-15 sm:p-10 md:p-24 lg:p-32">
+                {/* Header */}
+                <header className="mb-10">
+                    <h1 className="font-bold text-5xl md:text-6xl">PayMeLah!</h1>
+                    <p className="italic text-lg md:text-2xl font-medium text-dark-secondary mt-3 mb-6">Split shared expenses with your friends, easily.</p>
+                    <ScanReceiptButton />
+                </header>
 
-      <div className="p-5 sm:p-10 z-20">
-        <div className="mb-20">
-          <p className="text-sm font-semibold text-dark-accent">How it Works</p>
-          <h2 className="text-3xl md:text-4xl mb-5">Splitting finances with just <span className="font-bold">three</span> steps</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="border-2 border-dark-border rounded-lg p-5 box-border">
-              <p className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-dark-accent to-accent mb-2">1</p>
-              <p className="text-lg font-bold">Scan Receipts Instantly</p>
-              <p className="text-dark-secondary">Use your camera to scan any receipt, restaurant, grocery, or group expense. Receipt Items are instantly itemised.</p>
-            </div>
-            <div className="border-2 border-dark-border rounded-lg p-5 box-border">
-              <p className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-dark-accent to-accent mb-2">2</p>
-              <p className="text-lg font-bold">Split Bills, The Smart Way</p>
-              <p className="text-dark-secondary">Easily split the receipt among friends or group members. Assign individual items, divide shared costs, or split evenly.</p>
-            </div>
-            <div className="border-2 border-dark-border rounded-lg p-5 box-border">
-              <p className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-dark-accent to-accent mb-2">3</p>
-              <p className="text-lg font-bold">Share the Total</p>
-              <p className="text-dark-secondary">Share the bill with your group in just a tap. Send the link via text, email, or through the app.</p>
-            </div>
-          </div>
-        </div>
+                <div>
+                    {/* Steps Container */}
+                    <div className="flex flex-col md:flex-row gap-5 mb-10">
+                        <GlassContainer styles="flex-1 text-left md:text-center">
+                            <p className="font-bold text-5xl mb-2">1</p>
+                            <h2 className="font-bold text-xl">Scan Receipts Instantly</h2>
+                            <p className="font-medium text-dark-secondary">Use your camera to scan any receipt, restaurant, grocery, or group expense. Receipt Items are instantly itemised.</p>
+                        </GlassContainer>
 
-        <div className="flex flex-col md:flex-row bg-dark-secondary-background px-5 md:px-10 p-10 md:p-20 items-center justify-center place-content-between border-2 border-dark-border rounded-lg gap-8 md:gap-16">
-          <div>
-            <p className="text-sm font-semibold text-dark-accent">Our promise</p>
-            <h2 className="text-3xl md:text-4xl">Your Privacy, Assured</h2>
-            <p className="text-dark-secondary">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.</p>
-          </div>
+                        <GlassContainer styles="flex-1 text-left md:text-center">
+                            <p className="font-bold text-5xl mb-2">2</p>
+                            <h2 className="font-bold text-xl">Split Bills, The Smart Way</h2>
+                            <p className="font-medium text-dark-secondary">Easily split the receipt among friends or group members. Assign individual items, divide shared costs, or split evenly</p>
+                        </GlassContainer>
 
-          <div className="flex flex-col md:flex-row justify-center gap-5 h-full place-content-between">
-            <TermsAndPrivacy />
-          </div>
+                        <GlassContainer styles="flex-1 text-left md:text-center">
+                            <p className="font-bold text-5xl mb-2">3</p>
+                            <h2 className="font-bold text-xl">Share the Total</h2>
+                            <p className="font-medium text-dark-secondary">Share the bill with your group in just a tap. Send the link via text, email, or through the app.</p>
+                        </GlassContainer>
+                    </div>
+
+                    {/* Privacy Matters */}
+                    <GlassContainer styles="flex flex-col md:flex-row gap-5 md:gap-10 w-full text-left md:items-center p-5 md:p-10">
+                        <div className="md:max-w-sm md:mr-auto">
+                            <p className="text-sm font-semibold text-dark-accent">Our promise</p>
+                            <h2 className="text-3xl md:text-4xl font-bold mb-1">Your Privacy, Assured</h2>
+                            <p className="text-dark-secondary">Easily split the receipt among friends or group members. Assign individual items, divide shared costs, or split evenly.</p>
+                        </div>
+
+                        <GlassTermsAndPrivacy />
+                    </GlassContainer>
+                </div>
+
+                <p className="mt-5 text-dark-secondary italic font-medium text-sm pb-10">Developed with ♥ by Ethan Chew</p>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    )
 }

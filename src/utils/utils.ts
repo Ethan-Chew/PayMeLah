@@ -1,99 +1,128 @@
 "use server";
 import { groupTable, groupUsersTable, receiptItemSharesTable, receiptItemsTable, receiptsTable } from "@/db/schema";
-import { CreateReceiptModal, ParsedReceipt, ReceiptItem } from "@/db/types";
+import { ReceiptDetails, ParsedReceipt, ReceiptItem, DisplayedReceipt } from "@/db/types";
 import { db } from "@/utils/db";
 import OpenAI from 'openai';
+import { observeOpenAI } from "langfuse";
+import { zodTextFormat } from "openai/helpers/zod";
+import { z } from "zod";
 
 import dotenv from 'dotenv';
 import { eq } from "drizzle-orm";
 dotenv.config();
 
 export async function parseReceiptData(fileUrl: string) {
-    if (!fileUrl) {
-        return null;
+    // Input validation
+    if (!fileUrl || typeof fileUrl !== 'string') {
+        throw new Error('Invalid file URL provided');
     }
 
-    const systemMessage = `Extract items as: ItemName|Quantity|Price per line. End with: gst|amount, serviceCharge|amount. Use exact item names, remove item codes, ignore modifiers, handle duplicate items. Missing qty=1, free=0, no GST=gst|0, no service=serviceCharge|0. No extra text.
-Example:
-Veg Sandwich|1|5.75
-Latte|2|4.25
-Blueberry Muffin|0|0
-gst|0
-serviceCharge|0.99`
+    // Validate environment variables
+    if (!process.env.OPENAI_KEY) {
+        throw new Error('OpenAI API key is not configured');
+    }
+
+    const receiptItem = z.object({
+        name: z.string().min(1, "Item name cannot be empty"),
+        quantity: z.number().min(0, "Quantity must be non-negative"),
+        unitPrice: z.number().min(0, "Unit price must be non-negative"),
+    });
+
+    const receipt = z.object({
+        items: z.array(receiptItem),
+        gst: z.number().min(0, "GST must be non-negative"),
+        serviceCharge: z.number().min(0, "Service charge must be non-negative"),
+    });
+
+    const systemMessage = `You are given the text of a receipt. Extract the structured information into the schema.
+    Rules:
+    - Keep exact item names but strip codes/SKUs and modifiers (sizes, options).
+    - Merge duplicate items into one entry and sum the quantity.
+    - If quantity is missing → set to 1.
+    - If item is FREE or has price 0 → qty is still counted, but unitPrice = 0.
+    - If GST is missing → gst = 0.
+    - If service charge is missing → serviceCharge = 0.`;
 
     const isDev = process.env.DEPLOYMENT_TYPE === "development";
 
-    // Use the OpenAI API to Analyse the Receipt
-    const client = new OpenAI({
-        apiKey: process.env.OPENAI_KEY,
-    })
-
-    let textualResponse: string = "";
+    let openAIResponse: any;
     if (isDev) {
-        // MOCK: API Response for Development
-        textualResponse = `
-        Veg Sandwich|1|5.75  
-        Latte|2|4.25  
-        Blueberry Muffin|0|0  
-        Green Tea|1|3.15  
-        Pasta Alfredo|1|12.99  
-        Sparkling Water|1|2.5  
-        Fruit Bowl|2|0  
-        gst|0  
-        serviceCharge|0.99
-        `
+        // Sample API Response for Development
+        openAIResponse = {
+            "items": [
+                { "name": "Veg Sandwich", "quantity": 1, "unitPrice": 5.75 },
+                { "name": "Latte", "quantity": 2, "unitPrice": 4.25 },
+                { "name": "Blueberry Muffin", "quantity": 0, "unitPrice": 0 },
+                { "name": "Green Tea", "quantity": 1, "unitPrice": 3.15 },
+                { "name": "Pasta Alfredo", "quantity": 1, "unitPrice": 12.99 },
+                { "name": "Sparkling Water", "quantity": 1, "unitPrice": 2.5 },
+                { "name": "Fruit Bowl", "quantity": 2, "unitPrice": 0 }
+            ],
+            "gst": 0,
+            "serviceCharge": 0.99
+        };
     } else {
-        const apiResponse = await client.responses.create({
-            model: "gpt-4.1-nano",
-            input: [
-                {
-                    role: "user",
-                    content: [
-                        { type: "input_text", text: systemMessage },
-                        {
-                            type: "input_image",
-                            image_url: `${fileUrl}`,
-                            detail: "auto"
-                        }
-                    ]
+        try {
+            const client = observeOpenAI(new OpenAI({
+                apiKey: process.env.OPENAI_KEY,
+            }));
+
+            const apiResponse = await client.responses.parse({
+                model: "gpt-5-nano",
+                input: [
+                    {
+                        role: "user",
+                        content: [
+                            { type: "input_text", text: systemMessage },
+                            {
+                                type: "input_image",
+                                image_url: `${fileUrl}`,
+                                detail: "auto"
+                            }
+                        ]
+                    }
+                ],
+                text: {
+                    format: zodTextFormat(receipt, "receipt_format"),
                 }
-            ]
-        });
-        textualResponse = apiResponse.output_text
-    }
-
-    const parsedReceipt: ParsedReceipt = { items: [], gst: -1, serviceCharge: -1 };
-    for (const line of textualResponse.trim().split(/\r?\n/)) {
-        const splittedLine = line.split("|");
-
-        if (splittedLine.length === 3) { // Receipt Item
-            if (parseInt(splittedLine[1]) !== 0) {
-                parsedReceipt.items.push({
-                    name: splittedLine[0].trim(),
-                    quantity: parseInt(splittedLine[1]),
-                    unitCost: parseFloat(splittedLine[2]) / parseInt(splittedLine[1]),
-                    shares: []
-                });   
-            }
-        } else if (splittedLine[0].trim().toLowerCase() === "gst") {
-            parsedReceipt.gst = parseFloat(splittedLine[1]) || 0
-        } else if (splittedLine[0].trim().toLowerCase() === "servicecharge") {
-            parsedReceipt.serviceCharge = parseFloat(splittedLine[1]) || 0
+            });
+            openAIResponse = apiResponse.output_parsed;
+        } catch (error) {
+            console.error('OpenAI API error:', error);
+            throw new Error('Failed to parse receipt using OpenAI API');
         }
     }
 
-    return parsedReceipt;
+    // Validate the OpenAI response
+    try {
+        const validatedResponse = receipt.parse(openAIResponse);
+        
+        const parsedReceipt: ParsedReceipt = {
+            items: validatedResponse.items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                unitCost: item.unitPrice,
+                shares: []
+            })),
+            gst: validatedResponse.gst,
+            serviceCharge: validatedResponse.serviceCharge
+        };
+
+        return parsedReceipt;
+    } catch (error) {
+        console.error('Response validation error:', error);
+        throw new Error('Invalid response format from OpenAI API');
+    }
 }
 
-export async function saveReceiptToDB(receiptFormData: CreateReceiptModal, receiptData: ParsedReceipt) {
+export async function saveReceiptToDB(receiptDetails: ReceiptDetails, receiptData: ParsedReceipt) {
     let receiptId: string = "";
     await db.transaction(async (tx) => {
         // Create the Group
         const groupId = await tx.insert(groupTable).values({}).returning({ id: groupTable.id });
         
         // Add People to the Group
-        const userNames = [...receiptFormData.others, receiptFormData.payee].filter((name) => name !== "");
-        const insertedUsers = await tx.insert(groupUsersTable).values(userNames.map((name) => (
+        const insertedUsers = await tx.insert(groupUsersTable).values(receiptDetails.members.map((name) => (
             {
                 groupId: groupId[0].id,
                 userName: name
@@ -102,7 +131,7 @@ export async function saveReceiptToDB(receiptFormData: CreateReceiptModal, recei
         
         // Save the Receipt Data
         const receiptResult = await tx.insert(receiptsTable).values({
-            name: receiptFormData.title,
+            name: receiptDetails.title,
             groupId: groupId[0].id,
             gst: receiptData.gst.toString(),
             serviceCharge: receiptData.serviceCharge.toString(),
@@ -143,15 +172,6 @@ export async function saveReceiptToDB(receiptFormData: CreateReceiptModal, recei
     return receiptId;
 }
 
-export interface DisplayedReceipt {
-    name: string;
-    gst: string;
-    serviceCharge: string;
-    receiptItems: any[],
-    members: string[],
-    date: string
-}
-
 function formatDate(date: Date) {
     const day = date.getUTCDate();
     const month = date.toLocaleString('default', { month: 'long', timeZone: 'UTC' });
@@ -172,6 +192,7 @@ function formatDate(date: Date) {
 }
 
 export async function getReceiptData(receiptId: string) {
+    // Fetch the receipt data from the database
     const data = await db.select()
         .from(receiptsTable)
         .where(eq(receiptsTable.id, receiptId))
@@ -184,18 +205,19 @@ export async function getReceiptData(receiptId: string) {
     }
     
     const parsedReceipt: DisplayedReceipt = {
-        name: data[0].receipts.name,
-        gst: data[0].receipts.gst,
+        title: data[0].receipts.name,
         date: formatDate(data[0].receipts.createdAt),
-        serviceCharge: data[0].receipts.serviceCharge,
-        receiptItems: [],
+        gst: parseFloat(data[0].receipts.gst),
+        serviceCharge: parseFloat(data[0].receipts.serviceCharge),
         members: [],
+        items: []
     }
 
     const addedItems = new Set();
     const addedUsers = new Set();
     const addedShares = new Set();
 
+    // For every entry in the data, add the item, share and user to the parsedReceipt
     for (const entry of data) {
         const item = entry.receipt_items;
         const share = entry.receipt_item_shares;
@@ -203,10 +225,10 @@ export async function getReceiptData(receiptId: string) {
 
         // Add the Item to the receipt items
         if (!addedItems.has(item.id)) {
-            parsedReceipt.receiptItems.push({
+            parsedReceipt.items.push({
                 name: item.name,
                 quantity: item.quantity,
-                unitCost: item.unitCost,
+                unitCost: Number(item.unitCost),
                 shares: []
             });
             addedItems.add(item.id);
@@ -214,11 +236,11 @@ export async function getReceiptData(receiptId: string) {
 
         // Add the Share to the receipt items
         const shareId = `${item.id}-${share.userName}`;
-        if (!addedShares.has(shareId)) {
-            const parsedReceiptItemIndex = parsedReceipt.receiptItems.findIndex((receiptItem) => receiptItem.name === item.name);
-            parsedReceipt.receiptItems[parsedReceiptItemIndex].shares.push({
+        if (!addedShares.has(shareId) && share.userName) {
+            const parsedReceiptItemIndex = parsedReceipt.items.findIndex((receiptItem) => receiptItem.name === item.name);
+            parsedReceipt.items[parsedReceiptItemIndex].shares.push({
                 userName: share.userName,
-                share: share.share
+                share: parseFloat(share.share)
             });
             addedShares.add(shareId);
         }
@@ -234,6 +256,7 @@ export async function getReceiptData(receiptId: string) {
 }
 
 export async function determineGSTServiceChargeSplit(receipt: DisplayedReceipt) {
+    console.log(receipt)
     type MemberSplit = {
         total: number;
         serviceCharge: number;
@@ -241,16 +264,16 @@ export async function determineGSTServiceChargeSplit(receipt: DisplayedReceipt) 
     };
     const memberSplit: Record<string, MemberSplit> = {};
     for (const member of receipt.members) {
-        const memberSpend = receipt.receiptItems.reduce((acc, item) => {
+        const memberSpend = receipt.items.reduce((acc, item) => {
             const itemShare = item.shares.find((share: any) => share.userName === member);
             if (itemShare) {;
-                return acc + (parseFloat(item.unitCost) * parseFloat(itemShare.share));
+                return acc + (item.unitCost * itemShare.share);
             }
             return acc;
         }, 0);
-
-        const serviceCharge = parseFloat(receipt.serviceCharge) === 0 ? 0 : (memberSpend * 0.1);
-        const gst = parseFloat(receipt.gst) === 0 ? 0 : ((memberSpend + serviceCharge) * 0.09);
+    
+        const serviceCharge = receipt.serviceCharge === 0 ? 0 : (memberSpend * 0.1);
+        const gst = receipt.gst === 0 ? 0 : ((memberSpend + serviceCharge) * 0.09);
 
         memberSplit[member] = {
             total: memberSpend + serviceCharge + gst,
